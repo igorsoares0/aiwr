@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-black text-white relative overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-10">
+        <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+                <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
+                </pattern>
+            </defs>
+            <rect width="100" height="100" fill="url(#grid)"/>
+        </svg>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="relative z-10 flex items-center justify-between p-6 lg:px-8">
+        <div class="flex items-center">
+            <span class="text-xl font-semibold">Writify.</span>
+        </div>
+        <div class="hidden md:flex items-center space-x-8">
+            <a href="#" class="text-gray-300 hover:text-white transition-colors">Home</a>
+            <a href="#" class="text-gray-300 hover:text-white transition-colors">Platform</a>
+            <a href="#" class="text-gray-300 hover:text-white transition-colors">Company</a>
+            <a href="#" class="text-gray-300 hover:text-white transition-colors">Blog</a>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a href="{{ url_for('auth.login') }}" class="px-4 py-2 text-sm font-medium text-white border border-gray-600 rounded-md hover:bg-gray-800 transition-colors">
+                LOG IN
+            </a>
+            <a href="#" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                CONTACT US
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-32">
+        <div class="text-center">
+            <div class="mb-8">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-800 text-gray-300 border border-gray-700">
+                    ✨ THE AI WRITING TOOL
+                </span>
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                AI-powered<br>
+                <span class="text-gray-400">writing assistant.</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+                Elevate your writing with intelligent suggestions and seamless editing.<br>
+                Perfect for creativity, productivity, and precision.
+            </p>
+            
+            <div class="mb-16">
+                <a href="{{ url_for('auth.register') }}" class="inline-flex items-center px-8 py-3 text-sm font-semibold text-black bg-white rounded-md hover:bg-gray-100 transition-colors">
+                    SIGN UP
+                    <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Writing Interface Preview -->
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-800">
+                <div class="bg-gray-800 px-6 py-4 border-b border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    </div>
+                </div>
+                <div class="p-8">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-white mb-2">Lily's Magical Adventure.</h3>
+                        <div class="h-px bg-gray-700 mb-4"></div>
+                    </div>
+                    <div class="text-gray-300 leading-relaxed space-y-4">
+                        <p>Once upon a time, in a quaint village nestled between rolling hills and whispering forests, lived a young girl named Lily. With eyes as bright as the morning stars and a heart full of unbridled joy, she possessed the gift of extraordinary imagination.</p>
+                        <p>One evening, as the stars painted the sky with their shimmering light, a mysterious visitor appeared at Lily's doorstep. The stranger, cloaked in a voice-from-distant lands, offered her a choice of mystical artifacts that promised life beyond the borders of her sleepy village.</p>
+                        <div class="flex items-center space-x-2 mt-4 p-3 bg-gray-800 rounded-lg">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-gray-400">AI suggesting improvements...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Section -->
+    <div class="relative z-10 text-center pb-20">
+        <h2 class="text-3xl md:text-4xl font-bold mb-8">Empower your writing with AI.</h2>
+        <div class="mb-12">
+            <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gray-800 text-gray-300 border border-gray-700">
+                🚀 WITH WRITIFY YOU'LL GET
+            </span>
+        </div>
+        <a href="{{ url_for('auth.register') }}" class="inline-flex items-center px-8 py-3 text-sm font-semibold text-black bg-white rounded-md hover:bg-gray-100 transition-colors">
+            GET STARTED
+        </a>
+    </div>
+
+    <!-- Company Logos -->
+    <div class="relative z-10 border-t border-gray-800 py-12">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex justify-center items-center space-x-12 opacity-50">
+                <div class="text-2xl font-bold text-gray-600">Microsoft</div>
+                <div class="text-2xl font-bold text-gray-600">Google</div>
+                <div class="text-2xl font-bold text-gray-600">Medium</div>
+                <div class="text-2xl font-bold text-gray-600">Notion</div>
+                <div class="text-2xl font-bold text-gray-600">IBM</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
