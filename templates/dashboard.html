@@ -76,50 +76,39 @@
                     </a>
                 </nav>
 
-                <!-- Recent Documents -->
+                <!-- Uploaded Documents -->
                 <div class="mt-8">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Recent</h3>
-                    <div class="space-y-2">
-                        <div class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors">
-                            <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-medium text-white truncate">Writing Polisher</div>
-                                <div class="text-xs text-gray-400">2 hours ago</div>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Documents</h3>
+                    <div id="documents-list" class="space-y-2">
+                        {% for document in documents %}
+                        <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors" data-document-id="{{ document.id }}">
+                            <div class="flex items-center flex-1 min-w-0">
+                                <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-white truncate">{{ document.original_filename }}</div>
+                                    <div class="text-xs text-gray-400">{{ document.file_type.upper() }} • {{ (document.file_size / 1024) | round(1) }}KB</div>
+                                </div>
                             </div>
+                            <button onclick="deleteDocument({{ document.id }})" class="ml-2 text-gray-400 hover:text-red-400 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
-                        <div class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors">
-                            <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-medium text-white truncate">Blog post</div>
-                                <div class="text-xs text-gray-400">Yesterday</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors">
-                            <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-medium text-white truncate">Cover letter</div>
-                                <div class="text-xs text-gray-400">3 days ago</div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
-                </div>
-
-                <!-- Tools -->
-                <div class="mt-8">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Tools</h3>
-                    <div class="space-y-2">
-                        <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors">
-                            <svg class="mr-3 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    
+                    <!-- Upload Button -->
+                    <div class="mt-3">
+                        <input type="file" id="file-upload" accept=".pdf,.docx" class="hidden" onchange="uploadDocument()">
+                        <button onclick="document.getElementById('file-upload').click()" class="w-full flex items-center justify-center px-3 py-2 border border-gray-600 text-gray-300 text-sm rounded-md hover:bg-gray-700 transition-colors">
+                            <svg class="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                             </svg>
-                            Prompt Generator
-                        </a>
+                            Upload PDF/DOCX
+                        </button>
                     </div>
                 </div>
             </div>
@@ -127,30 +116,61 @@
 
         <!-- Main Content Area -->
         <main class="flex-1 flex flex-col">
-            <!-- Content Header -->
+            <!-- Title Input -->
             <div class="p-6 border-b border-gray-700">
-                <h1 class="text-2xl font-bold text-white">Lily's Magical Adventure.</h1>
+                <input type="text" id="title-input" placeholder="Enter your writing title..." class="w-full text-2xl font-bold text-white bg-transparent border-none outline-none placeholder-gray-500" value="" />
             </div>
 
             <!-- Writing Area -->
             <div class="flex-1 p-6">
                 <div class="max-w-4xl mx-auto">
                     <div class="bg-gray-800 rounded-lg border border-gray-700 min-h-96">
-                        <div class="p-6">
-                            <div class="prose prose-invert max-w-none">
-                                <p class="text-gray-300 leading-relaxed mb-4">
-                                    Once upon a time, in a quaint village nestled between rolling hills and whispering forests, lived a young girl named Lily. With eyes as bright as the morning stars and beyond the borders of her sleepy village.
-                                </p>
-                                <p class="text-gray-300 leading-relaxed mb-4">
-                                    One evening, as the stars painted the sky with their shimmering light, a mysterious visitor appeared at Lily's doorstep. The stranger, cloaked in mist, spoke of wonders in the far corners of mystical artifacts that awakened the light crystal of Serenity, a powerful artifact that held the key to unlocking harmony in the realm.
-                                </p>
-                                <p class="text-gray-300 leading-relaxed mb-4">
-                                    With a leap of faith, Lily embarked on her journey through enchanted lantern. Together, they ventured deep into the secrets of ancient magic and mystical adventures.
-                                </p>
-                                <p class="text-gray-300 leading-relaxed mb-4">
-                                    As they traversed through winding pathways and over rolling hills, they discovered courage and resolve. With each obstacle overcome, Lily grew stronger, and each determination to fulfill her destiny.
-                                </p>
+                        <div class="relative">
+                            <!-- Modern AI Editor - Single Layer -->
+                            <div id="editor-container" class="relative">
+                                <div id="editor" 
+                                     contenteditable="true" 
+                                     class="w-full h-96 bg-transparent border-none outline-none text-gray-300 resize-none overflow-y-auto"
+                                     style="font-family: ui-serif, Georgia, Cambria, serif; line-height: 1.7; padding: 24px; margin: 0; box-sizing: border-box;"
+                                     data-placeholder="Start writing... AI suggestions will appear inline as you type.">
+                                </div>
+                                
+                                <!-- Floating Suggestion Controls -->
+                                <div id="suggestion-controls" class="hidden fixed z-50 bg-gray-800 rounded-lg shadow-lg border border-gray-600">
+                                    <div class="flex items-center space-x-3 px-4 py-2 text-sm">
+                                        <button id="accept-btn" class="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                            <span>Accept</span>
+                                            <kbd class="ml-1 px-1 py-0.5 bg-blue-700 text-xs rounded">Tab</kbd>
+                                        </button>
+                                        <button id="try-again-btn" class="flex items-center space-x-1 px-3 py-1 border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors">
+                                            <span>Try Again</span>
+                                            <kbd class="ml-1 px-1 py-0.5 bg-gray-600 text-xs rounded">Shift+Tab</kbd>
+                                        </button>
+                                        <button id="dismiss-btn" class="flex items-center space-x-1 px-3 py-1 border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors">
+                                            <span>Dismiss</span>
+                                            <kbd class="ml-1 px-1 py-0.5 bg-gray-600 text-xs rounded">Esc</kbd>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+                            
+                            <!-- CSS for placeholder and suggestions -->
+                            <style>
+                                #editor:empty:before {
+                                    content: attr(data-placeholder);
+                                    color: #6b7280;
+                                    pointer-events: none;
+                                }
+                                #editor:focus {
+                                    outline: none;
+                                }
+                                .ai-suggestion {
+                                    color: #6b7280;
+                                    background: rgba(59, 130, 246, 0.1);
+                                    border-radius: 2px;
+                                    padding: 0 2px;
+                                }
+                            </style>
                         </div>
                     </div>
                 </div>
@@ -160,49 +180,53 @@
         <!-- Right Panel -->
         <aside class="w-80 bg-gray-800 border-l border-gray-700 p-6">
             <div class="space-y-6">
-                <!-- Plan Info -->
-                <div class="bg-gray-700 rounded-lg p-4">
-                    <h3 class="text-sm font-semibold text-white mb-2">Free Plan</h3>
-                    <p class="text-xs text-gray-400 mb-3">15,000 words remaining</p>
-                    <button class="w-full px-3 py-2 bg-white text-black text-sm font-medium rounded-md hover:bg-gray-100 transition-colors">
-                        Upgrade
-                    </button>
-                </div>
-
                 <!-- Writing Stats -->
                 <div>
                     <h3 class="text-sm font-semibold text-white mb-3">Writing Stats</h3>
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between text-gray-300">
                             <span>Words</span>
-                            <span>247</span>
+                            <span id="word-count">0</span>
                         </div>
                         <div class="flex justify-between text-gray-300">
                             <span>Characters</span>
-                            <span>1,432</span>
+                            <span id="char-count">0</span>
                         </div>
                         <div class="flex justify-between text-gray-300">
                             <span>Reading time</span>
-                            <span>1 min</span>
+                            <span id="reading-time">0 min</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- AI Suggestions -->
+                <!-- AI Status -->
                 <div>
-                    <h3 class="text-sm font-semibold text-white mb-3">AI Suggestions</h3>
-                    <div class="bg-gray-700 rounded-lg p-4">
-                        <p class="text-sm text-gray-300 mb-3">
-                            Consider adding more descriptive details about the enchanted forest to enhance the magical atmosphere.
-                        </p>
-                        <div class="flex space-x-2">
-                            <button class="px-3 py-1 bg-white text-black text-xs font-medium rounded hover:bg-gray-100 transition-colors">
-                                Apply
-                            </button>
-                            <button class="px-3 py-1 border border-gray-600 text-white text-xs font-medium rounded hover:bg-gray-600 transition-colors">
-                                Dismiss
-                            </button>
+                    <h3 class="text-sm font-semibold text-white mb-3">AI Assistant</h3>
+                    <div id="ai-status" class="bg-gray-700 rounded-lg p-4">
+                        <div class="flex items-center text-sm text-gray-400">
+                            <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                            Ready - Start writing with a title
                         </div>
+                    </div>
+                </div>
+
+                <!-- Status Indicator -->
+                <div id="status-indicator" class="hidden">
+                    <div class="flex items-center text-sm text-gray-400">
+                        <svg class="animate-spin mr-2 w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Getting AI suggestions...
+                    </div>
+                </div>
+                
+                <!-- Help Text -->
+                <div class="text-xs text-gray-500 bg-gray-700 rounded-lg p-3">
+                    <div class="space-y-1">
+                        <div><kbd class="bg-gray-600 px-1 rounded">Tab</kbd> Accept suggestion</div>
+                        <div><kbd class="bg-gray-600 px-1 rounded">Shift+Tab</kbd> Try again</div>
+                        <div><kbd class="bg-gray-600 px-1 rounded">Esc</kbd> Dismiss</div>
                     </div>
                 </div>
             </div>
@@ -210,6 +234,7 @@
     </div>
 </div>
 
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
 <script>
     // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
@@ -220,5 +245,56 @@
             dropdown.classList.add('hidden');
         }
     });
+
+    // Document upload function
+    async function uploadDocument() {
+        const fileInput = document.getElementById('file-upload');
+        const file = fileInput.files[0];
+        
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                location.reload(); // Reload to show new document
+            } else {
+                alert(result.error || 'Upload failed');
+            }
+        } catch (error) {
+            alert('Upload failed. Please try again.');
+        }
+        
+        fileInput.value = ''; // Reset input
+    }
+
+    // Document delete function
+    async function deleteDocument(documentId) {
+        if (!confirm('Are you sure you want to delete this document?')) return;
+        
+        try {
+            const response = await fetch(`/api/documents/${documentId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                location.reload(); // Reload to remove document from list
+            } else {
+                alert('Failed to delete document');
+            }
+        } catch (error) {
+            alert('Failed to delete document. Please try again.');
+        }
+    }
 </script>
 {% endblock %}

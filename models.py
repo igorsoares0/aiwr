@@ -24,6 +24,7 @@ class User(UserMixin, db.Model):
     # Relationships
     reset_tokens = db.relationship('PasswordResetToken', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     email_tokens = db.relationship('EmailVerificationToken', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    documents = db.relationship('Document', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
     def set_password(self, password):
         """Hash and set the user's password"""
@@ -92,3 +93,19 @@ class EmailVerificationToken(db.Model):
     @property
     def is_valid(self):
         return not self.used and not self.is_expired
+
+class Document(db.Model):
+    __tablename__ = 'documents'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    original_filename = db.Column(db.String(255), nullable=False)
+    file_type = db.Column(db.String(10), nullable=False)  # 'pdf' or 'docx'
+    file_size = db.Column(db.Integer, nullable=False)
+    content_text = db.Column(db.Text, nullable=True)  # Extracted text content
+    upload_path = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<Document {self.original_filename}>'
