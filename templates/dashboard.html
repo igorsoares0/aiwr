@@ -34,8 +34,7 @@
                     <!-- Dropdown -->
                     <div id="create-dropdown" class="hidden absolute right-8 top-16 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-md shadow-lg z-50">
                         <div class="py-1">
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">New Document</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">New Project</a>
+                            <a href="#" onclick="startNewText(); return false;" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">New Text</a>
                             <div class="border-t border-gray-700 my-1"></div>
                             <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Sign out</a>
                         </div>
@@ -108,6 +107,48 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                             </svg>
                             Upload PDF/DOCX
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Saved Texts -->
+                <div class="mt-8">
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">My Texts</h3>
+                    <div id="texts-list" class="space-y-2">
+                        {% for text in texts %}
+                        <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors" data-text-id="{{ text.id }}">
+                            <div class="flex items-center flex-1 min-w-0" onclick="loadTextIntoEditor({{ text.id }})">
+                                <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-white truncate">{{ text.title }}</div>
+                                    <div class="text-xs text-gray-400">{{ text.updated_at.strftime('%m/%d/%Y') }}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <button onclick="editText({{ text.id }})" class="text-gray-400 hover:text-blue-400 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                                <button onclick="deleteText({{ text.id }})" class="text-gray-400 hover:text-red-400 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- New Text Button -->
+                    <div class="mt-3">
+                        <button onclick="createNewText()" class="w-full flex items-center justify-center px-3 py-2 border border-gray-600 text-gray-300 text-sm rounded-md hover:bg-gray-700 transition-colors">
+                            <svg class="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            New Text
                         </button>
                     </div>
                 </div>
@@ -232,6 +273,46 @@
             </div>
         </aside>
     </div>
+
+    <!-- Modal for Create/Edit Text -->
+    <div id="text-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b border-gray-700">
+                <h3 id="modal-title" class="text-lg font-semibold text-white">New Text</h3>
+                <button onclick="closeTextModal()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="text-form" class="flex flex-col h-full">
+                <div class="p-6 flex-1 overflow-y-auto">
+                    <div class="mb-4">
+                        <label for="text-title" class="block text-sm font-medium text-gray-300 mb-2">Title</label>
+                        <input type="text" id="text-title" name="title" required
+                               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Enter text title...">
+                    </div>
+                    <div class="mb-4">
+                        <label for="text-content" class="block text-sm font-medium text-gray-300 mb-2">Content</label>
+                        <textarea id="text-content" name="content" rows="15"
+                                  class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                  placeholder="Write your text here..."></textarea>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 p-6 border-t border-gray-700">
+                    <button type="button" onclick="closeTextModal()" 
+                            class="px-4 py-2 text-gray-300 hover:text-white transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Save Text
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/editor.js') }}"></script>
@@ -296,5 +377,297 @@
             alert('Failed to delete document. Please try again.');
         }
     }
+
+    // Text management variables
+    let currentTextId = null;
+    let isEditMode = false;
+
+    // Create new text
+    function createNewText() {
+        currentTextId = null;
+        isEditMode = false;
+        document.getElementById('modal-title').textContent = 'New Text';
+        document.getElementById('text-title').value = '';
+        document.getElementById('text-content').value = '';
+        document.getElementById('text-modal').classList.remove('hidden');
+    }
+
+    // Edit existing text
+    async function editText(textId) {
+        try {
+            const response = await fetch(`/api/texts/${textId}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                currentTextId = textId;
+                isEditMode = true;
+                document.getElementById('modal-title').textContent = 'Edit Text';
+                document.getElementById('text-title').value = result.text.title;
+                document.getElementById('text-content').value = result.text.content || '';
+                document.getElementById('text-modal').classList.remove('hidden');
+            } else {
+                alert('Failed to load text');
+            }
+        } catch (error) {
+            alert('Failed to load text. Please try again.');
+        }
+    }
+
+
+    // Delete text
+    async function deleteText(textId) {
+        if (!confirm('Are you sure you want to delete this text?')) return;
+        
+        try {
+            const response = await fetch(`/api/texts/${textId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                location.reload(); // Reload to remove text from list
+            } else {
+                alert('Failed to delete text');
+            }
+        } catch (error) {
+            alert('Failed to delete text. Please try again.');
+        }
+    }
+
+    // Close modal
+    function closeTextModal() {
+        document.getElementById('text-modal').classList.add('hidden');
+        currentTextId = null;
+        isEditMode = false;
+    }
+
+    // Handle form submission
+    document.getElementById('text-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const title = document.getElementById('text-title').value.trim();
+        const content = document.getElementById('text-content').value.trim();
+        
+        if (!title) {
+            alert('Title is required');
+            return;
+        }
+        
+        try {
+            const url = isEditMode ? `/api/texts/${currentTextId}` : '/api/texts';
+            const method = isEditMode ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: title,
+                    content: content
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeTextModal();
+                location.reload(); // Reload to show updated text list
+            } else {
+                alert(result.error || 'Failed to save text');
+            }
+        } catch (error) {
+            alert('Failed to save text. Please try again.');
+        }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('text-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeTextModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('text-modal').classList.contains('hidden')) {
+            closeTextModal();
+        }
+    });
+
+    // Auto-save functionality
+    let currentActiveTextId = null;
+    let autoSaveTimeout = null;
+    let lastSavedTitle = '';
+    let lastSavedContent = '';
+    let isLoadingText = false; // Flag to prevent auto-save during text loading
+
+    // Debounced auto-save function
+    function scheduleAutoSave() {
+        // Don't schedule auto-save if we're loading a text
+        if (isLoadingText) {
+            return;
+        }
+        
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(() => {
+            autoSaveCurrentText();
+        }, 2000); // Save after 2 seconds of inactivity
+    }
+
+    // Get clean text content excluding AI suggestions
+    function getCleanEditorContent() {
+        const editorElement = document.getElementById('editor');
+        const clonedEditor = editorElement.cloneNode(true);
+        
+        // Remove AI suggestion elements
+        const suggestionElements = clonedEditor.querySelectorAll('.ai-suggestion');
+        suggestionElements.forEach(el => el.remove());
+        
+        // Get clean text content
+        return clonedEditor.textContent || clonedEditor.innerText || '';
+    }
+
+    // Auto-save current text
+    async function autoSaveCurrentText() {
+        // Skip if we're loading text
+        if (isLoadingText) {
+            return;
+        }
+        
+        const title = document.getElementById('title-input').value.trim();
+        const cleanContent = getCleanEditorContent().trim();
+        
+        // Don't save if no title or no changes
+        if (!title || (title === lastSavedTitle && cleanContent === lastSavedContent)) {
+            return;
+        }
+        
+        try {
+            let response;
+            if (currentActiveTextId) {
+                // Update existing text
+                response = await fetch(`/api/texts/${currentActiveTextId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: cleanContent
+                    })
+                });
+            } else {
+                // Create new text
+                response = await fetch('/api/texts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: cleanContent
+                    })
+                });
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                currentActiveTextId = result.text.id;
+                lastSavedTitle = title;
+                lastSavedContent = cleanContent;
+                
+                // Update the text list if this is a new text
+                if (!document.querySelector(`[data-text-id="${currentActiveTextId}"]`)) {
+                    location.reload(); // Reload to show new text in sidebar
+                }
+            }
+        } catch (error) {
+            console.error('Auto-save failed:', error);
+        }
+    }
+
+    // Start new text (clear current active text)
+    function startNewText() {
+        // Set loading flag to prevent auto-save during clearing
+        isLoadingText = true;
+        
+        currentActiveTextId = null;
+        document.getElementById('title-input').value = '';
+        const editorElement = document.getElementById('editor');
+        editorElement.innerHTML = ''; // Clear all HTML content
+        editorElement.textContent = ''; // Set empty text
+        
+        // Reset tracking variables AFTER clearing content
+        lastSavedTitle = '';
+        lastSavedContent = '';
+        
+        // Remove active styling from all texts
+        document.querySelectorAll('[data-text-id]').forEach(el => {
+            el.classList.remove('bg-gray-700');
+        });
+        
+        // Re-enable auto-save quickly
+        setTimeout(() => {
+            isLoadingText = false;
+        }, 50);
+    }
+
+    // Updated loadText function to set active text
+    async function loadTextIntoEditor(textId) {
+        // Prevent multiple simultaneous loads
+        if (isLoadingText) {
+            return;
+        }
+        
+        try {
+            // Set loading flag to prevent auto-save interference
+            isLoadingText = true;
+            
+            const response = await fetch(`/api/texts/${textId}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                currentActiveTextId = textId;
+                
+                document.getElementById('title-input').value = result.text.title;
+                const editorElement = document.getElementById('editor');
+                editorElement.innerHTML = ''; // Clear editor first
+                editorElement.textContent = result.text.content || ''; // Set as plain text
+                
+                // Update tracking variables with the actual content from database
+                lastSavedTitle = result.text.title;
+                lastSavedContent = result.text.content || '';
+                
+                // Update active text styling
+                document.querySelectorAll('[data-text-id]').forEach(el => {
+                    el.classList.remove('bg-gray-700');
+                });
+                document.querySelector(`[data-text-id="${textId}"]`).classList.add('bg-gray-700');
+            }
+        } catch (error) {
+            console.error('Failed to load text:', error);
+        } finally {
+            // Always clear loading flag quickly
+            setTimeout(() => {
+                isLoadingText = false;
+            }, 100); // Minimal delay to ensure DOM is updated
+        }
+    }
+
+    // Expose scheduleAutoSave globally for editor.js to call
+    window.scheduleAutoSave = scheduleAutoSave;
+
+    // Add event listeners for auto-save
+    document.getElementById('title-input').addEventListener('input', scheduleAutoSave);
+    document.getElementById('editor').addEventListener('input', scheduleAutoSave);
+    
+    // Handle paste events
+    document.getElementById('editor').addEventListener('paste', () => {
+        setTimeout(scheduleAutoSave, 100); // Small delay to let paste complete
+    });
+
 </script>
 {% endblock %}

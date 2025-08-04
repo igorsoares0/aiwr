@@ -25,6 +25,7 @@ class User(UserMixin, db.Model):
     reset_tokens = db.relationship('PasswordResetToken', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     email_tokens = db.relationship('EmailVerificationToken', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     documents = db.relationship('Document', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    texts = db.relationship('Text', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
     def set_password(self, password):
         """Hash and set the user's password"""
@@ -109,3 +110,16 @@ class Document(db.Model):
     
     def __repr__(self):
         return f'<Document {self.original_filename}>'
+
+class Text(db.Model):
+    __tablename__ = 'texts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<Text {self.title}>'

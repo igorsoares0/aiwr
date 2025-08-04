@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-from models import db, Document
+from models import db, Document, Text
 from ai_service import ai_assistant
 from document_processor import document_processor
 import os
@@ -16,9 +16,10 @@ def index():
 @main_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Get user's documents
+    # Get user's documents and texts
     user_documents = Document.query.filter_by(user_id=current_user.id).all()
-    return render_template('dashboard.html', user=current_user, documents=user_documents)
+    user_texts = Text.query.filter_by(user_id=current_user.id).order_by(Text.updated_at.desc()).all()
+    return render_template('dashboard.html', user=current_user, documents=user_documents, texts=user_texts)
 
 @main_bp.route('/api/ai-assist', methods=['POST'])
 @login_required
@@ -115,3 +116,158 @@ def delete_document(document_id):
     except Exception as e:
         print(f"Error in delete_document: {str(e)}")
         return jsonify({'error': 'Failed to delete document'}), 500
+
+# Text CRUD Routes
+@main_bp.route('/api/texts', methods=['GET'])
+@login_required
+def get_texts():
+    """Get all texts for the current user"""
+    try:
+        texts = Text.query.filter_by(user_id=current_user.id).order_by(Text.updated_at.desc()).all()
+        
+        texts_data = []
+        for text in texts:
+            texts_data.append({
+                'id': text.id,
+                'title': text.title,
+                'content': text.content,
+                'created_at': text.created_at.isoformat(),
+                'updated_at': text.updated_at.isoformat()
+            })
+        
+        return jsonify({
+            'success': True,
+            'texts': texts_data
+        })
+        
+    except Exception as e:
+        print(f"Error in get_texts: {str(e)}")
+        return jsonify({'error': 'Failed to fetch texts'}), 500
+
+@main_bp.route('/api/texts', methods=['POST'])
+@login_required
+def create_text():
+    """Create a new text"""
+    try:
+        data = request.get_json()
+        title = data.get('title', '').strip()
+        content = data.get('content', '').strip()
+        
+        if not title:
+            return jsonify({'error': 'Title is required'}), 400
+        
+        # Create new text
+        text = Text(
+            user_id=current_user.id,
+            title=title,
+            content=content
+        )
+        
+        db.session.add(text)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'text': {
+                'id': text.id,
+                'title': text.title,
+                'content': text.content,
+                'created_at': text.created_at.isoformat(),
+                'updated_at': text.updated_at.isoformat()
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in create_text: {str(e)}")
+        return jsonify({'error': 'Failed to create text'}), 500
+
+@main_bp.route('/api/texts/<int:text_id>', methods=['GET'])
+@login_required
+def get_text(text_id):
+    """Get a specific text"""
+    try:
+        text = Text.query.filter_by(
+            id=text_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not text:
+            return jsonify({'error': 'Text not found'}), 404
+        
+        return jsonify({
+            'success': True,
+            'text': {
+                'id': text.id,
+                'title': text.title,
+                'content': text.content,
+                'created_at': text.created_at.isoformat(),
+                'updated_at': text.updated_at.isoformat()
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in get_text: {str(e)}")
+        return jsonify({'error': 'Failed to fetch text'}), 500
+
+@main_bp.route('/api/texts/<int:text_id>', methods=['PUT'])
+@login_required
+def update_text(text_id):
+    """Update a text"""
+    try:
+        text = Text.query.filter_by(
+            id=text_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not text:
+            return jsonify({'error': 'Text not found'}), 404
+        
+        data = request.get_json()
+        title = data.get('title', '').strip()
+        content = data.get('content', '').strip()
+        
+        if not title:
+            return jsonify({'error': 'Title is required'}), 400
+        
+        # Update text
+        text.title = title
+        text.content = content
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'text': {
+                'id': text.id,
+                'title': text.title,
+                'content': text.content,
+                'created_at': text.created_at.isoformat(),
+                'updated_at': text.updated_at.isoformat()
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in update_text: {str(e)}")
+        return jsonify({'error': 'Failed to update text'}), 500
+
+@main_bp.route('/api/texts/<int:text_id>', methods=['DELETE'])
+@login_required
+def delete_text(text_id):
+    """Delete a text"""
+    try:
+        text = Text.query.filter_by(
+            id=text_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not text:
+            return jsonify({'error': 'Text not found'}), 404
+        
+        db.session.delete(text)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        print(f"Error in delete_text: {str(e)}")
+        return jsonify({'error': 'Failed to delete text'}), 500
