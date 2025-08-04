@@ -251,9 +251,12 @@ class ModernAIEditor {
         // Focus editor
         this.editor.focus();
         
-        // Trigger auto-save for the accepted content
+        // Trigger auto-save and auto-resize for the accepted content
         if (window.scheduleAutoSave) {
             window.scheduleAutoSave();
+        }
+        if (window.autoResizeEditor) {
+            setTimeout(window.autoResizeEditor, 10);
         }
         
         // Request new suggestion after a brief delay
