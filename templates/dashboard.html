@@ -346,7 +346,8 @@
             const result = await response.json();
             
             if (result.success) {
-                location.reload(); // Reload to show new document
+                // Document uploaded successfully - could add to sidebar dynamically here if needed
+                console.log('Document uploaded successfully');
             } else {
                 alert(result.error || 'Upload failed');
             }
@@ -369,7 +370,11 @@
             const result = await response.json();
             
             if (result.success) {
-                location.reload(); // Reload to remove document from list
+                // Remove document from sidebar dynamically
+                const documentElement = document.querySelector(`[data-document-id="${documentId}"]`);
+                if (documentElement) {
+                    documentElement.remove();
+                }
             } else {
                 alert('Failed to delete document');
             }
@@ -426,7 +431,16 @@
             const result = await response.json();
             
             if (result.success) {
-                location.reload(); // Reload to remove text from list
+                // Remove text from sidebar
+                const textElement = document.querySelector(`[data-text-id="${textId}"]`);
+                if (textElement) {
+                    textElement.remove();
+                }
+                
+                // If this was the active text, clear the editor
+                if (currentActiveTextId === textId) {
+                    startNewText();
+                }
             } else {
                 alert('Failed to delete text');
             }
@@ -473,7 +487,17 @@
             
             if (result.success) {
                 closeTextModal();
-                location.reload(); // Reload to show updated text list
+                // Update text in sidebar if it exists, otherwise add it
+                const existingTextElement = document.querySelector(`[data-text-id="${result.text.id}"]`);
+                if (existingTextElement) {
+                    // Update existing text title in sidebar
+                    const titleElement = existingTextElement.querySelector('.text-sm.font-medium.text-white.truncate');
+                    if (titleElement) {
+                        titleElement.textContent = result.text.title;
+                    }
+                } else {
+                    addTextToSidebar(result.text);
+                }
             } else {
                 alert(result.error || 'Failed to save text');
             }
@@ -502,6 +526,43 @@
     let lastSavedTitle = '';
     let lastSavedContent = '';
     let isLoadingText = false; // Flag to prevent auto-save during text loading
+
+    // Add text to sidebar dynamically
+    function addTextToSidebar(text) {
+        const textsList = document.getElementById('texts-list');
+        const currentDate = new Date(text.updated_at).toLocaleDateString();
+        
+        const textElement = document.createElement('div');
+        textElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors bg-gray-700';
+        textElement.setAttribute('data-text-id', text.id);
+        
+        textElement.innerHTML = `
+            <div class="flex items-center flex-1 min-w-0" onclick="loadTextIntoEditor(${text.id})">
+                <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-white truncate">${text.title}</div>
+                    <div class="text-xs text-gray-400">${currentDate}</div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-1">
+                <button onclick="editText(${text.id})" class="text-gray-400 hover:text-blue-400 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                </button>
+                <button onclick="deleteText(${text.id})" class="text-gray-400 hover:text-red-400 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        
+        // Add to the top of the list (most recent first)
+        textsList.insertBefore(textElement, textsList.firstChild);
+    }
 
     // Debounced auto-save function
     function scheduleAutoSave() {
@@ -539,8 +600,8 @@
         const title = document.getElementById('title-input').value.trim();
         const cleanContent = getCleanEditorContent().trim();
         
-        // Don't save if no title or no changes
-        if (!title || (title === lastSavedTitle && cleanContent === lastSavedContent)) {
+        // Don't save if no title, no content, or no changes
+        if (!title || !cleanContent || (title === lastSavedTitle && cleanContent === lastSavedContent)) {
             return;
         }
         
@@ -581,7 +642,7 @@
                 
                 // Update the text list if this is a new text
                 if (!document.querySelector(`[data-text-id="${currentActiveTextId}"]`)) {
-                    location.reload(); // Reload to show new text in sidebar
+                    addTextToSidebar(result.text);
                 }
             }
         } catch (error) {
@@ -661,12 +722,25 @@
     window.scheduleAutoSave = scheduleAutoSave;
 
     // Add event listeners for auto-save
-    document.getElementById('title-input').addEventListener('input', scheduleAutoSave);
+    // Only trigger auto-save when content changes, not title
     document.getElementById('editor').addEventListener('input', scheduleAutoSave);
     
     // Handle paste events
     document.getElementById('editor').addEventListener('paste', () => {
         setTimeout(scheduleAutoSave, 100); // Small delay to let paste complete
+    });
+
+    // Handle first click on editor - start new text if needed
+    document.getElementById('editor').addEventListener('focus', function(e) {
+        const title = document.getElementById('title-input').value.trim();
+        const content = getCleanEditorContent().trim();
+        
+        // If there's a title but no active text and no content, prepare for new text
+        if (title && !currentActiveTextId && !content) {
+            // Clear any existing tracking to start fresh
+            lastSavedTitle = '';
+            lastSavedContent = '';
+        }
     });
 
 </script>
