@@ -111,6 +111,13 @@ class Document(db.Model):
     def __repr__(self):
         return f'<Document {self.original_filename}>'
 
+# Association table for Text-Document many-to-many relationship
+text_documents = db.Table('text_documents',
+    db.Column('text_id', db.Integer, db.ForeignKey('texts.id'), primary_key=True),
+    db.Column('document_id', db.Integer, db.ForeignKey('documents.id'), primary_key=True),
+    db.Column('created_at', db.DateTime, default=datetime.utcnow)
+)
+
 class Text(db.Model):
     __tablename__ = 'texts'
     
@@ -120,6 +127,9 @@ class Text(db.Model):
     content = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Many-to-many relationship with documents
+    documents = db.relationship('Document', secondary=text_documents, backref='texts', lazy='dynamic')
     
     def __repr__(self):
         return f'<Text {self.title}>'

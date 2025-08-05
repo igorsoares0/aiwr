@@ -29,13 +29,23 @@ def ai_assist():
         data = request.get_json()
         title = data.get('title', '').strip()
         text = data.get('text', '').strip()
+        current_text_id = data.get('current_text_id', None)  # Optional: current active text ID
         
         if not title:
             return jsonify({'error': 'Title is required'}), 400
         
-        # Get user's documents for context
-        user_documents = Document.query.filter_by(user_id=current_user.id).all()
-        document_context = document_processor.get_document_context(user_documents)
+        # Get document context based on current text
+        document_context = ""
+        if current_text_id:
+            # Get documents associated with current text
+            current_text = Text.query.filter_by(
+                id=current_text_id,
+                user_id=current_user.id
+            ).first()
+            
+            if current_text:
+                associated_documents = current_text.documents.all()
+                document_context = document_processor.get_document_context(associated_documents)
         
         # Generate suggestions
         suggestions = ai_assistant.get_suggestions(title, text, document_context)
@@ -271,3 +281,162 @@ def delete_text(text_id):
     except Exception as e:
         print(f"Error in delete_text: {str(e)}")
         return jsonify({'error': 'Failed to delete text'}), 500
+
+# Text-Document Association Routes
+@main_bp.route('/api/texts/<int:text_id>/documents', methods=['GET'])
+@login_required
+def get_text_documents(text_id):
+    """Get all documents associated with a specific text"""
+    try:
+        # Verify text belongs to current user
+        text = Text.query.filter_by(
+            id=text_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not text:
+            return jsonify({'error': 'Text not found'}), 404
+        
+        # Get associated documents
+        documents = text.documents.all()
+        
+        documents_data = []
+        for doc in documents:
+            documents_data.append({
+                'id': doc.id,
+                'filename': doc.original_filename,
+                'file_type': doc.file_type,
+                'file_size': doc.file_size,
+                'created_at': doc.created_at.isoformat()
+            })
+        
+        return jsonify({
+            'success': True,
+            'documents': documents_data
+        })
+        
+    except Exception as e:
+        print(f"Error in get_text_documents: {str(e)}")
+        return jsonify({'error': 'Failed to fetch text documents'}), 500
+
+@main_bp.route('/api/texts/<int:text_id>/documents/<int:document_id>', methods=['POST'])
+@login_required
+def associate_document_to_text(text_id, document_id):
+    """Associate a document with a text"""
+    try:
+        # Verify text belongs to current user
+        text = Text.query.filter_by(
+            id=text_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not text:
+            return jsonify({'error': 'Text not found'}), 404
+        
+        # Verify document belongs to current user
+        document = Document.query.filter_by(
+            id=document_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not document:
+            return jsonify({'error': 'Document not found'}), 404
+        
+        # Check if already associated
+        if document in text.documents:
+            return jsonify({'error': 'Document already associated with this text'}), 400
+        
+        # Associate document with text
+        text.documents.append(document)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Document associated successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error in associate_document_to_text: {str(e)}")
+        return jsonify({'error': 'Failed to associate document'}), 500
+
+@main_bp.route('/api/texts/<int:text_id>/documents/<int:document_id>', methods=['DELETE'])
+@login_required
+def disassociate_document_from_text(text_id, document_id):
+    """Remove association between a document and a text"""
+    try:
+        # Verify text belongs to current user
+        text = Text.query.filter_by(
+            id=text_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not text:
+            return jsonify({'error': 'Text not found'}), 404
+        
+        # Verify document belongs to current user
+        document = Document.query.filter_by(
+            id=document_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not document:
+            return jsonify({'error': 'Document not found'}), 404
+        
+        # Check if document is associated
+        if document not in text.documents:
+            return jsonify({'error': 'Document not associated with this text'}), 400
+        
+        # Remove association
+        text.documents.remove(document)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Document disassociated successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error in disassociate_document_from_text: {str(e)}")
+        return jsonify({'error': 'Failed to disassociate document'}), 500
+
+@main_bp.route('/api/texts/<int:text_id>/available-documents', methods=['GET'])
+@login_required
+def get_available_documents_for_text(text_id):
+    """Get all user's documents that are not yet associated with the text"""
+    try:
+        # Verify text belongs to current user
+        text = Text.query.filter_by(
+            id=text_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not text:
+            return jsonify({'error': 'Text not found'}), 404
+        
+        # Get all user's documents
+        all_documents = Document.query.filter_by(user_id=current_user.id).all()
+        
+        # Get documents already associated with this text
+        associated_document_ids = [doc.id for doc in text.documents.all()]
+        
+        # Filter out already associated documents
+        available_documents = [doc for doc in all_documents if doc.id not in associated_document_ids]
+        
+        documents_data = []
+        for doc in available_documents:
+            documents_data.append({
+                'id': doc.id,
+                'filename': doc.original_filename,
+                'file_type': doc.file_type,
+                'file_size': doc.file_size,
+                'created_at': doc.created_at.isoformat()
+            })
+        
+        return jsonify({
+            'success': True,
+            'documents': documents_data
+        })
+        
+    except Exception as e:
+        print(f"Error in get_available_documents_for_text: {str(e)}")
+        return jsonify({'error': 'Failed to fetch available documents'}), 500

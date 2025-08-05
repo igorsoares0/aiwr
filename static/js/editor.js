@@ -135,7 +135,8 @@ class ModernAIEditor {
                 },
                 body: JSON.stringify({
                     title: title,
-                    text: text
+                    text: text,
+                    current_text_id: window.currentActiveTextId || null
                 })
             });
             

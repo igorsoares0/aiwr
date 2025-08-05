@@ -75,9 +75,22 @@
                     </a>
                 </nav>
 
-                <!-- Uploaded Documents -->
+                <!-- Text Documents (only for active text) -->
+                <div class="mt-8" id="text-documents-section" style="display: none;">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Text Documents</h3>
+                        <button onclick="showAddDocumentModal()" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                            + Add
+                        </button>
+                    </div>
+                    <div id="text-documents-list" class="space-y-2">
+                        <!-- Documents associated with current text will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- All User Documents -->
                 <div class="mt-8">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Documents</h3>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">All Documents</h3>
                     <div id="documents-list" class="space-y-2">
                         {% for document in documents %}
                         <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors" data-document-id="{{ document.id }}">
@@ -322,6 +335,28 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal for Add Documents to Text -->
+    <div id="add-document-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b border-gray-700">
+                <h3 class="text-lg font-semibold text-white">Add Documents to Text</h3>
+                <button onclick="closeAddDocumentModal()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 max-h-96 overflow-y-auto">
+                <div id="available-documents-list" class="space-y-2">
+                    <!-- Available documents will be loaded here -->
+                </div>
+                <div id="no-documents-message" class="text-center text-gray-400 py-8 hidden">
+                    No available documents to add. Upload some documents first.
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/editor.js') }}"></script>
@@ -534,7 +569,10 @@
     let autoSaveTimeout = null;
     let lastSavedTitle = '';
     let lastSavedContent = '';
-    let isLoadingText = false; // Flag to prevent auto-save during text loading
+    let isLoadingText = false;
+    
+    // Sync with global window variable for editor access
+    window.currentActiveTextId = null; // Flag to prevent auto-save during text loading
 
     // Add text to sidebar dynamically
     function addTextToSidebar(text) {
@@ -646,6 +684,7 @@
             
             if (result.success) {
                 currentActiveTextId = result.text.id;
+                window.currentActiveTextId = result.text.id;
                 lastSavedTitle = title;
                 lastSavedContent = cleanContent;
                 
@@ -665,6 +704,7 @@
         isLoadingText = true;
         
         currentActiveTextId = null;
+        window.currentActiveTextId = null;
         document.getElementById('title-input').value = '';
         const editorElement = document.getElementById('editor');
         editorElement.innerHTML = ''; // Clear all HTML content
@@ -704,6 +744,7 @@
             
             if (result.success) {
                 currentActiveTextId = textId;
+                window.currentActiveTextId = textId;
                 
                 document.getElementById('title-input').value = result.text.title;
                 const editorElement = document.getElementById('editor');
@@ -781,6 +822,175 @@
             // Clear any existing tracking to start fresh
             lastSavedTitle = '';
             lastSavedContent = '';
+        }
+    });
+
+    // Text-Document Association Functions
+    async function loadTextDocuments(textId) {
+        if (!textId) {
+            document.getElementById('text-documents-section').style.display = 'none';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/texts/${textId}/documents`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const documentsList = document.getElementById('text-documents-list');
+                documentsList.innerHTML = '';
+                
+                // Always show the text documents section when a text is active
+                document.getElementById('text-documents-section').style.display = 'block';
+                
+                if (result.documents.length > 0) {
+                    result.documents.forEach(doc => {
+                        const docElement = document.createElement('div');
+                        docElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 bg-gray-700 rounded-md';
+                        docElement.innerHTML = `
+                            <div class="flex items-center flex-1 min-w-0">
+                                <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-white truncate">${doc.filename}</div>
+                                    <div class="text-xs text-gray-400">${doc.file_type.toUpperCase()} • ${Math.round(doc.file_size / 1024)}KB</div>
+                                </div>
+                            </div>
+                            <button onclick="removeDocumentFromText(${textId}, ${doc.id})" class="ml-2 text-gray-400 hover:text-red-400 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        `;
+                        documentsList.appendChild(docElement);
+                    });
+                } else {
+                    // Show a message when no documents are associated
+                    const emptyMessage = document.createElement('div');
+                    emptyMessage.className = 'text-xs text-gray-400 italic text-center py-2';
+                    emptyMessage.textContent = 'No documents associated with this text';
+                    documentsList.appendChild(emptyMessage);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load text documents:', error);
+        }
+    }
+
+    async function showAddDocumentModal() {
+        if (!currentActiveTextId) {
+            alert('Please select a text first');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/texts/${currentActiveTextId}/available-documents`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const availableList = document.getElementById('available-documents-list');
+                const noDocsMessage = document.getElementById('no-documents-message');
+                
+                availableList.innerHTML = '';
+                
+                if (result.documents.length > 0) {
+                    noDocsMessage.classList.add('hidden');
+                    
+                    result.documents.forEach(doc => {
+                        const docElement = document.createElement('div');
+                        docElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors';
+                        docElement.innerHTML = `
+                            <div class="flex items-center flex-1 min-w-0">
+                                <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-white truncate">${doc.filename}</div>
+                                    <div class="text-xs text-gray-400">${doc.file_type.toUpperCase()} • ${Math.round(doc.file_size / 1024)}KB</div>
+                                </div>
+                            </div>
+                            <button onclick="addDocumentToText(${currentActiveTextId}, ${doc.id})" class="ml-2 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                Add
+                            </button>
+                        `;
+                        availableList.appendChild(docElement);
+                    });
+                } else {
+                    noDocsMessage.classList.remove('hidden');
+                }
+                
+                document.getElementById('add-document-modal').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Failed to load available documents:', error);
+            alert('Failed to load available documents');
+        }
+    }
+
+    function closeAddDocumentModal() {
+        document.getElementById('add-document-modal').classList.add('hidden');
+    }
+
+    async function addDocumentToText(textId, documentId) {
+        try {
+            const response = await fetch(`/api/texts/${textId}/documents/${documentId}`, {
+                method: 'POST'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeAddDocumentModal();
+                loadTextDocuments(textId);
+            } else {
+                alert(result.error || 'Failed to add document');
+            }
+        } catch (error) {
+            console.error('Failed to add document to text:', error);
+            alert('Failed to add document to text');
+        }
+    }
+
+    async function removeDocumentFromText(textId, documentId) {
+        if (!confirm('Remove this document from the current text?')) return;
+        
+        try {
+            const response = await fetch(`/api/texts/${textId}/documents/${documentId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                loadTextDocuments(textId);
+            } else {
+                alert(result.error || 'Failed to remove document');
+            }
+        } catch (error) {
+            console.error('Failed to remove document from text:', error);
+            alert('Failed to remove document from text');
+        }
+    }
+
+    // Update loadTextIntoEditor to also load associated documents
+    const originalLoadTextIntoEditor = loadTextIntoEditor;
+    loadTextIntoEditor = async function(textId) {
+        await originalLoadTextIntoEditor(textId);
+        await loadTextDocuments(textId);
+    };
+
+    // Update startNewText to hide text documents section
+    const originalStartNewText = startNewText;
+    startNewText = function() {
+        originalStartNewText();
+        document.getElementById('text-documents-section').style.display = 'none';
+    };
+
+    // Close modal when clicking outside
+    document.getElementById('add-document-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAddDocumentModal();
         }
     });
 
