@@ -3,8 +3,6 @@ class ModernAIEditor {
         this.titleInput = document.getElementById('title-input');
         this.editor = document.getElementById('editor');
         this.suggestionControls = document.getElementById('suggestion-controls');
-        this.statusIndicator = document.getElementById('status-indicator');
-        this.aiStatus = document.getElementById('ai-status');
         this.wordCountEl = document.getElementById('word-count');
         this.charCountEl = document.getElementById('char-count');
         this.readingTimeEl = document.getElementById('reading-time');
@@ -37,7 +35,6 @@ class ModernAIEditor {
         
         // Initialize stats
         this.updateStats();
-        this.updateAIStatus('Ready - Start writing with a title');
         
         console.log('Modern AI editor initialized');
     }
@@ -45,13 +42,8 @@ class ModernAIEditor {
     handleTitleInput(event) {
         this.clearSuggestion();
         
-        if (!this.titleInput.value.trim()) {
-            this.updateAIStatus('Enter a title to enable AI suggestions');
-        } else if (this.getTextContent().trim()) {
-            this.updateAIStatus('Ready');
+        if (this.titleInput.value.trim() && this.getTextContent().trim()) {
             this.debouncedAIRequest();
-        } else {
-            this.updateAIStatus('Ready - Start writing');
         }
     }
     
@@ -64,12 +56,10 @@ class ModernAIEditor {
         
         // Only make AI request if title is provided
         if (!this.titleInput.value.trim()) {
-            this.updateAIStatus('Enter a title to enable AI suggestions');
             return;
         }
         
         // Trigger debounced AI request
-        this.updateAIStatus('Ready');
         this.debouncedAIRequest();
     }
     
@@ -104,9 +94,6 @@ class ModernAIEditor {
             clearTimeout(this.debounceTimer);
         }
         
-        // Show loading state
-        this.showLoadingState();
-        
         // Set new timer
         this.debounceTimer = setTimeout(() => {
             this.makeAIRequest();
@@ -118,7 +105,6 @@ class ModernAIEditor {
         const text = this.getTextContent().trim();
         
         if (!title) {
-            this.hideLoadingState();
             return;
         }
         
@@ -126,8 +112,6 @@ class ModernAIEditor {
         const requestId = ++this.currentRequestId;
         
         try {
-            this.updateAIStatus('Generating suggestion...');
-            
             const response = await fetch('/api/ai-assist', {
                 method: 'POST',
                 headers: {
@@ -151,10 +135,6 @@ class ModernAIEditor {
                 // Get the first continuation suggestion
                 const continuationSuggestion = result.suggestions.find(s => s.type === 'continuation') || result.suggestions[0];
                 this.showInlineSuggestion(continuationSuggestion.text);
-                this.updateAIStatus('AI suggestion ready');
-            } else {
-                this.updateAIStatus('No suggestions available');
-                this.hideLoadingState();
             }
             
         } catch (error) {
@@ -163,13 +143,10 @@ class ModernAIEditor {
             }
             
             console.error('AI request error:', error);
-            this.updateAIStatus('Failed to get suggestions');
-            this.hideLoadingState();
         }
     }
     
     showInlineSuggestion(suggestion) {
-        this.hideLoadingState();
         
         // Store the current selection/cursor position
         const selection = window.getSelection();
@@ -245,9 +222,8 @@ class ModernAIEditor {
         // Clear suggestion
         this.clearSuggestion();
         
-        // Update stats and status
+        // Update stats
         this.updateStats();
-        this.updateAIStatus('Suggestion applied');
         
         // Focus editor
         this.editor.focus();
@@ -270,13 +246,11 @@ class ModernAIEditor {
         if (!this.currentSuggestion) return;
         
         this.clearSuggestion();
-        this.updateAIStatus('Getting new suggestion...');
         this.makeAIRequest();
     }
     
     dismissSuggestion() {
         this.clearSuggestion();
-        this.updateAIStatus('Suggestion dismissed');
         this.editor.focus();
     }
     
@@ -291,32 +265,6 @@ class ModernAIEditor {
         this.suggestionControls.classList.add('hidden');
     }
     
-    showLoadingState() {
-        this.statusIndicator.classList.remove('hidden');
-    }
-    
-    hideLoadingState() {
-        this.statusIndicator.classList.add('hidden');
-    }
-    
-    updateAIStatus(message) {
-        const statusDiv = this.aiStatus.querySelector('div');
-        const dot = statusDiv.querySelector('div');
-        
-        // Update status color based on message
-        if (message.includes('ready') || message.includes('Ready')) {
-            dot.className = 'w-2 h-2 bg-green-400 rounded-full mr-2';
-        } else if (message.includes('Generating') || message.includes('Getting')) {
-            dot.className = 'w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse';
-        } else if (message.includes('Failed') || message.includes('error')) {
-            dot.className = 'w-2 h-2 bg-red-400 rounded-full mr-2';
-        } else {
-            dot.className = 'w-2 h-2 bg-blue-400 rounded-full mr-2';
-        }
-        
-        // Update text
-        statusDiv.childNodes[1].textContent = message;
-    }
     
     updateStats() {
         const text = this.getTextContent();
