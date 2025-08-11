@@ -131,6 +131,13 @@ class ModernAIEditor {
                 return;
             }
             
+            // Handle subscription required response
+            if (response.status === 403 && result.error === 'Subscription required') {
+                // Show pricing message and redirect
+                this.showSubscriptionAlert(result);
+                return;
+            }
+            
             if (result.success && result.suggestions && result.suggestions.length > 0) {
                 // Get the first continuation suggestion
                 const continuationSuggestion = result.suggestions.find(s => s.type === 'continuation') || result.suggestions[0];
@@ -280,6 +287,26 @@ class ModernAIEditor {
         // Reading time (average 200 words per minute)
         const readingTime = Math.max(1, Math.ceil(words / 200));
         this.readingTimeEl.textContent = `${readingTime} min`;
+    }
+    
+    showSubscriptionAlert(result) {
+        // Clear any existing suggestion first
+        this.clearSuggestion();
+        
+        let message = 'Your free trial has expired. Please choose a plan to continue using AI assistance.';
+        
+        if (result.trial_expired) {
+            message = 'Your free trial has expired. Please choose a plan to continue.';
+        } else if (result.subscription_status === 'past_due') {
+            message = 'Your subscription payment is overdue. Please update your payment method.';
+        } else if (result.subscription_status === 'canceled') {
+            message = 'Your subscription has been canceled. Please choose a plan to continue.';
+        }
+        
+        // Show alert with option to go to pricing
+        if (confirm(message + '\n\nWould you like to view our pricing plans?')) {
+            window.location.href = result.redirect_url || '/pricing';
+        }
     }
 }
 

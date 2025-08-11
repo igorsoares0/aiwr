@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing - Writify{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-white">
+    <!-- Navigation -->
+    <nav class="border-b border-gray-800 bg-gray-900/95 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('main.index') }}" class="text-xl font-semibold">Writify.</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white transition-colors">Dashboard</a>
+                        <a href="{{ url_for('auth.logout') }}" class="text-gray-300 hover:text-white transition-colors">Sign out</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="text-gray-300 hover:text-white transition-colors">Sign in</a>
+                        <a href="{{ url_for('auth.register') }}" class="bg-white text-gray-900 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors">Get Started</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center">
+            <h1 class="text-4xl font-bold text-white mb-4">Choose Your Plan</h1>
+            <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+                Start with a 7-day free trial. No credit card required. Upgrade anytime.
+            </p>
+        </div>
+    </div>
+
+    <!-- Trial Status (for authenticated users) -->
+    {% if current_user.is_authenticated %}
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        {% if current_user.is_trial_active %}
+            <div class="bg-blue-900/50 border border-blue-700 rounded-lg p-4 text-center">
+                <div class="flex items-center justify-center mb-2">
+                    <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-blue-300 font-medium">Free Trial Active</span>
+                </div>
+                <p class="text-gray-300">
+                    You have <span class="font-semibold text-white">{{ current_user.days_left_in_trial }} days</span> left in your trial.
+                    {% if current_user.days_left_in_trial <= 3 %}
+                        <span class="text-orange-300">Choose a plan below to continue using Writify after your trial ends.</span>
+                    {% endif %}
+                </p>
+            </div>
+        {% elif current_user.subscription_status == 'trial' %}
+            <div class="bg-red-900/50 border border-red-700 rounded-lg p-4 text-center">
+                <div class="flex items-center justify-center mb-2">
+                    <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    <span class="text-red-300 font-medium">Trial Expired</span>
+                </div>
+                <p class="text-gray-300">Your free trial has ended. Choose a plan below to continue using Writify.</p>
+            </div>
+        {% elif current_user.subscription_status == 'active' %}
+            <div class="bg-green-900/50 border border-green-700 rounded-lg p-4 text-center">
+                <div class="flex items-center justify-center mb-2">
+                    <svg class="w-5 h-5 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-green-300 font-medium">Active Subscription</span>
+                </div>
+                <p class="text-gray-300">
+                    You're currently on the <span class="font-semibold text-white capitalize">{{ current_user.subscription_plan }}</span> plan.
+                    <a href="{{ url_for('billing.index') }}" class="text-blue-400 hover:text-blue-300 ml-2">Manage billing →</a>
+                </p>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Pricing Cards -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div class="grid md:grid-cols-2 gap-8">
+            
+            <!-- Monthly Plan -->
+            <div class="bg-gray-800 rounded-xl border border-gray-700 p-8 relative">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold text-white mb-2">Monthly</h3>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-white">$27</span>
+                        <span class="text-gray-400">/month</span>
+                    </div>
+                    
+                    <!-- Features -->
+                    <ul class="space-y-4 mb-8 text-left">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-300">Unlimited AI-assisted writing</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-300">Document upload & context</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-300">Auto-save & sync</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-300">Priority support</span>
+                        </li>
+                    </ul>
+                    
+                    <button onclick="selectPlan('monthly')" 
+                            class="w-full bg-white text-gray-900 py-3 px-6 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                        {% if current_user.is_authenticated and current_user.subscription_plan == 'monthly' %}
+                            Current Plan
+                        {% else %}
+                            Choose Monthly
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Annual Plan -->
+            <div class="bg-gray-800 rounded-xl border-2 border-blue-500 p-8 relative">
+                <!-- Popular badge -->
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <span class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">Most Popular</span>
+                </div>
+                
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold text-white mb-2">Annual</h3>
+                    <div class="mb-2">
+                        <span class="text-4xl font-bold text-white">$192</span>
+                        <span class="text-gray-400">/year</span>
+                    </div>
+                    <div class="mb-6">
+                        <span class="text-green-400 text-sm font-medium">Save $132/year</span>
+                        <div class="text-gray-400 text-sm">($16/month)</div>
+                    </div>
+                    
+                    <!-- Features -->
+                    <ul class="space-y-4 mb-8 text-left">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-300">Everything in Monthly</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-300"><strong>40% savings</strong> vs monthly</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-300">Advanced AI features (coming soon)</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-300">Priority feature requests</span>
+                        </li>
+                    </ul>
+                    
+                    <button onclick="selectPlan('annual')" 
+                            class="w-full bg-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors">
+                        {% if current_user.is_authenticated and current_user.subscription_plan == 'annual' %}
+                            Current Plan
+                        {% else %}
+                            Choose Annual
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FAQ or additional info -->
+        <div class="mt-16 text-center">
+            <h3 class="text-xl font-semibold text-white mb-6">Frequently Asked Questions</h3>
+            <div class="grid md:grid-cols-2 gap-8 text-left">
+                <div>
+                    <h4 class="font-medium text-white mb-2">Can I change plans anytime?</h4>
+                    <p class="text-gray-400">Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-white mb-2">What happens after my trial?</h4>
+                    <p class="text-gray-400">After your 7-day trial ends, you'll need to choose a plan to continue using Writify. Your data will be preserved.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-white mb-2">Can I cancel anytime?</h4>
+                    <p class="text-gray-400">Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-white mb-2">Is my data secure?</h4>
+                    <p class="text-gray-400">Absolutely. We use industry-standard encryption and security measures to protect your data and privacy.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function selectPlan(planType) {
+        {% if not current_user.is_authenticated %}
+            // Redirect to register first
+            window.location.href = "{{ url_for('auth.register') }}?plan=" + planType;
+            return;
+        {% endif %}
+        
+        // Check if user already has this plan
+        {% if current_user.is_authenticated %}
+            if ("{{ current_user.subscription_plan }}" === planType) {
+                window.location.href = "{{ url_for('billing.index') }}";
+                return;
+            }
+        {% endif %}
+        
+        try {
+            const response = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    plan_type: planType
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.checkout_url) {
+                window.location.href = result.checkout_url;
+            } else {
+                alert('Error creating checkout session: ' + (result.error || 'Unknown error'));
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error creating checkout session. Please try again.');
+        }
+    }
+</script>
+{% endblock %}

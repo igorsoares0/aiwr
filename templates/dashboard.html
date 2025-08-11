@@ -15,6 +15,29 @@
 
                 <!-- User Menu -->
                 <div class="flex items-center space-x-4">
+                    <!-- Subscription Status Badge -->
+                    {% if is_trial_active %}
+                        <div class="flex items-center space-x-2 px-3 py-1 bg-blue-900/50 border border-blue-700 rounded-full">
+                            <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span class="text-xs text-blue-300 font-medium">Trial: {{ days_left_in_trial }} days left</span>
+                        </div>
+                    {% elif subscription_status == 'trial' %}
+                        <div class="flex items-center space-x-2 px-3 py-1 bg-red-900/50 border border-red-700 rounded-full">
+                            <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+                            <span class="text-xs text-red-300 font-medium">Trial Expired</span>
+                        </div>
+                    {% elif is_subscription_active %}
+                        <div class="flex items-center space-x-2 px-3 py-1 bg-green-900/50 border border-green-700 rounded-full">
+                            <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                            <span class="text-xs text-green-300 font-medium capitalize">{{ subscription_plan }} Plan</span>
+                        </div>
+                    {% elif subscription_status == 'past_due' %}
+                        <div class="flex items-center space-x-2 px-3 py-1 bg-orange-900/50 border border-orange-700 rounded-full">
+                            <div class="w-2 h-2 bg-orange-400 rounded-full"></div>
+                            <span class="text-xs text-orange-300 font-medium">Payment Required</span>
+                        </div>
+                    {% endif %}
+
                     <div class="flex items-center space-x-3">
                         {% if user.avatar_url %}
                             <img src="{{ user.avatar_url }}" alt="{{ user.full_name }}" class="w-8 h-8 rounded-full">
@@ -35,6 +58,11 @@
                     <div id="create-dropdown" class="hidden absolute right-8 top-16 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-md shadow-lg z-50">
                         <div class="py-1">
                             <a href="#" onclick="startNewText(); return false;" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">New Text</a>
+                            <div class="border-t border-gray-700 my-1"></div>
+                            <a href="{{ url_for('billing.index') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Billing & Subscription</a>
+                            {% if not has_valid_access %}
+                                <a href="{{ url_for('billing.pricing') }}" class="block px-4 py-2 text-sm text-blue-300 hover:bg-gray-700">Upgrade Plan</a>
+                            {% endif %}
                             <div class="border-t border-gray-700 my-1"></div>
                             <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Sign out</a>
                         </div>
@@ -990,6 +1018,91 @@
             closeAddDocumentModal();
         }
     });
+
+    // Check subscription status and show notifications
+    {% if not has_valid_access %}
+        // Show subscription expired notification
+        setTimeout(function() {
+            if (!sessionStorage.getItem('subscription_notified')) {
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-20 right-4 bg-red-900 border border-red-700 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
+                notification.innerHTML = `
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-red-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <h4 class="font-medium mb-1">{% if subscription_status == 'trial' %}Trial Expired{% else %}Subscription Inactive{% endif %}</h4>
+                            <p class="text-sm text-gray-300 mb-3">
+                                {% if subscription_status == 'trial' %}
+                                    Your free trial has ended. Choose a plan to continue using Writify.
+                                {% elif subscription_status == 'past_due' %}
+                                    Please update your payment method to reactivate your account.
+                                {% else %}
+                                    Your subscription is inactive. Choose a plan to continue.
+                                {% endif %}
+                            </p>
+                            <div class="flex space-x-2">
+                                <a href="{{ url_for('billing.pricing') }}" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors">
+                                    {% if subscription_status == 'past_due' %}Update Payment{% else %}Choose Plan{% endif %}
+                                </a>
+                                <button onclick="this.closest('.fixed').remove(); sessionStorage.setItem('subscription_notified', 'true');" class="text-xs text-gray-400 hover:text-white">
+                                    Dismiss
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                // Auto dismiss after 10 seconds
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        notification.remove();
+                        sessionStorage.setItem('subscription_notified', 'true');
+                    }
+                }, 10000);
+            }
+        }, 1000);
+    {% elif is_trial_active and days_left_in_trial <= 3 %}
+        // Show trial ending soon notification
+        setTimeout(function() {
+            if (!sessionStorage.getItem('trial_warning_shown')) {
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-20 right-4 bg-orange-900 border border-orange-700 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
+                notification.innerHTML = `
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-orange-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <h4 class="font-medium mb-1">Trial Ending Soon</h4>
+                            <p class="text-sm text-gray-300 mb-3">
+                                Only {{ days_left_in_trial }} day{{ 's' if days_left_in_trial != 1 else '' }} left in your trial. Choose a plan to continue.
+                            </p>
+                            <div class="flex space-x-2">
+                                <a href="{{ url_for('billing.pricing') }}" class="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded transition-colors">
+                                    Choose Plan
+                                </a>
+                                <button onclick="this.closest('.fixed').remove(); sessionStorage.setItem('trial_warning_shown', 'true');" class="text-xs text-gray-400 hover:text-white">
+                                    Dismiss
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                // Auto dismiss after 8 seconds
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        notification.remove();
+                        sessionStorage.setItem('trial_warning_shown', 'true');
+                    }
+                }, 8000);
+            }
+        }, 2000);
+    {% endif %}
 
 </script>
 {% endblock %}

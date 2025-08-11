@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from models import db, Document, Text
 from ai_service import ai_assistant
 from document_processor import document_processor
+from subscription_middleware import subscription_required, api_subscription_required
 import os
 
 main_bp = Blueprint('main', __name__)
@@ -15,6 +16,7 @@ def index():
 
 @main_bp.route('/dashboard')
 @login_required
+@subscription_required
 def dashboard():
     # Get user's documents and texts
     user_documents = Document.query.filter_by(user_id=current_user.id).all()
@@ -23,6 +25,7 @@ def dashboard():
 
 @main_bp.route('/api/ai-assist', methods=['POST'])
 @login_required
+@api_subscription_required
 def ai_assist():
     """Generate AI writing suggestions"""
     try:
@@ -61,6 +64,7 @@ def ai_assist():
 
 @main_bp.route('/api/upload', methods=['POST'])
 @login_required
+@api_subscription_required
 def upload_document():
     """Handle document upload"""
     try:
@@ -156,6 +160,7 @@ def get_texts():
 
 @main_bp.route('/api/texts', methods=['POST'])
 @login_required
+@api_subscription_required
 def create_text():
     """Create a new text"""
     try:

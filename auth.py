@@ -47,6 +47,9 @@ def register():
         )
         user.set_password(form.password.data)
         
+        # Start 7-day trial automatically
+        user.start_trial()
+        
         try:
             db.session.add(user)
             db.session.commit()
@@ -56,9 +59,13 @@ def register():
             db.session.add(verification_token)
             db.session.commit()
             
-            send_verification_email(user, verification_token.token)
+            email_sent = send_verification_email(user, verification_token.token)
             
-            flash('Registration successful! Please check your email to verify your account.', 'success')
+            if email_sent:
+                flash('Registration successful! Please check your email to verify your account.', 'success')
+            else:
+                flash('Registration successful! However, we could not send the verification email. Please contact support.', 'warning')
+            
             return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()
@@ -106,6 +113,8 @@ def google_login():
                     avatar_url=avatar_url,
                     email_verified=True
                 )
+                # Start 7-day trial automatically for new Google users
+                user.start_trial()
             
             db.session.add(user)
             db.session.commit()
@@ -211,7 +220,7 @@ def send_verification_email(user, token):
     </div>
     '''
     
-    send_email(subject, user.email, html_body)
+    return send_email(subject, user.email, html_body)
 
 def send_password_reset_email(user, token):
     subject = 'Reset Your Writify Password'

@@ -6,8 +6,10 @@ from flask_mail import Mail
 from models import db, User
 from auth import auth_bp
 from main import main_bp
+from billing_routes import billing_bp
 from utils import mail
 from config import Config
+from subscription_middleware import init_subscription_middleware
 
 def create_app():
     app = Flask(__name__)
@@ -31,9 +33,13 @@ def create_app():
     # Initialize Flask-Migrate
     migrate = Migrate(app, db)
     
+    # Initialize subscription middleware
+    init_subscription_middleware(app)
+    
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
+    app.register_blueprint(billing_bp)
     
     # Error handlers
     @app.errorhandler(404)
@@ -51,7 +57,7 @@ def create_app():
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['X-XSS-Protection'] = '1; mode=block'
-        response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com"
+        response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com https://checkout.stripe.com https://js.stripe.com https://billing.stripe.com"
         return response
     
     return app
