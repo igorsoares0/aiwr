@@ -8,8 +8,13 @@
     <nav class="border-b border-gray-800 bg-gray-900/95 backdrop-blur-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
+                <!-- Logo and Sidebar Toggle -->
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleSidebar()" class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
                     <span class="text-xl font-semibold">Writify.</span>
                 </div>
 
@@ -82,7 +87,7 @@
     <!-- Main Content -->
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-64 bg-gray-800 border-r border-gray-700 min-h-screen">
+        <aside id="sidebar" class="w-64 bg-gray-800 border-r border-gray-700 min-h-screen transition-all duration-300 ease-in-out">
             <div class="p-6">
                 <!-- Search -->
                 <div class="mb-6">
@@ -191,8 +196,11 @@
         <!-- Main Content Area -->
         <main class="flex-1 flex flex-col">
             <!-- Title Input -->
-            <div class="p-6 border-b border-gray-700">
-                <input type="text" id="title-input" placeholder="Enter your writing title..." class="w-full text-2xl font-bold text-white bg-transparent border-none outline-none placeholder-gray-500" value="" />
+            <div class="border-b border-gray-700">
+                <div class="max-w-4xl mx-auto">
+                    <input type="text" id="title-input" placeholder="Enter your writing title..." class="w-full text-2xl font-bold text-white bg-transparent border-none outline-none placeholder-gray-500" 
+                           style="padding: 24px; margin: 0; box-sizing: border-box;" value="" />
+                </div>
             </div>
 
             <!-- Writing Area -->
@@ -259,6 +267,37 @@
                                     position: relative;
                                     z-index: 10;
                                 }
+                                
+                                /* Sidebar toggle styles */
+                                .sidebar-hidden {
+                                    margin-left: -256px !important; /* Negative width of sidebar */
+                                }
+                                
+                                .sidebar-hidden ~ main {
+                                    margin-left: 0 !important;
+                                }
+                                
+                                /* Bottom bar spacing */
+                                main {
+                                    padding-bottom: 70px; /* Space for bottom bar */
+                                }
+                                
+                                /* Responsive bottom bar */
+                                @media (max-width: 768px) {
+                                    .bottom-bar-content {
+                                        flex-direction: column;
+                                        gap: 12px;
+                                        align-items: center;
+                                    }
+                                    
+                                    .bottom-bar-shortcuts {
+                                        gap: 8px;
+                                    }
+                                    
+                                    main {
+                                        padding-bottom: 100px; /* More space on mobile */
+                                    }
+                                }
                             </style>
                         </div>
                     </div>
@@ -266,41 +305,48 @@
             </div>
         </main>
 
-        <!-- Right Panel -->
-        <aside class="w-80 bg-gray-800 border-l border-gray-700 p-6 overflow-y-auto">
-            <div class="space-y-8">
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bottom-bar-content flex items-center justify-between py-3">
                 <!-- Writing Stats -->
-                <div>
-                    <h3 class="text-sm font-semibold text-white mb-3">Writing Stats</h3>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between text-gray-300">
-                            <span>Words</span>
-                            <span id="word-count">0</span>
-                        </div>
-                        <div class="flex justify-between text-gray-300">
-                            <span>Characters</span>
-                            <span id="char-count">0</span>
-                        </div>
-                        <div class="flex justify-between text-gray-300">
-                            <span>Reading time</span>
-                            <span id="reading-time">0 min</span>
-                        </div>
+                <div class="flex items-center space-x-4 sm:space-x-6 text-sm">
+                    <div class="flex items-center space-x-1 sm:space-x-2">
+                        <span class="text-gray-400 hidden sm:inline">Words:</span>
+                        <span class="text-gray-400 sm:hidden">W:</span>
+                        <span id="word-count" class="text-white font-medium">0</span>
+                    </div>
+                    <div class="flex items-center space-x-1 sm:space-x-2">
+                        <span class="text-gray-400 hidden sm:inline">Characters:</span>
+                        <span class="text-gray-400 sm:hidden">C:</span>
+                        <span id="char-count" class="text-white font-medium">0</span>
+                    </div>
+                    <div class="flex items-center space-x-1 sm:space-x-2">
+                        <span class="text-gray-400 hidden sm:inline">Reading time:</span>
+                        <span class="text-gray-400 sm:hidden">RT:</span>
+                        <span id="reading-time" class="text-white font-medium">0 min</span>
                     </div>
                 </div>
 
-                <!-- AI Assistant -->
-                <div>
-                    <h3 class="text-sm font-semibold text-white mb-3">AI Assistant</h3>
-                    <div class="text-xs text-gray-500 bg-gray-700 rounded-lg p-3">
-                        <div class="space-y-1">
-                            <div><kbd class="bg-gray-600 px-1 rounded">Tab</kbd> Accept suggestion</div>
-                            <div><kbd class="bg-gray-600 px-1 rounded">Shift+Tab</kbd> Try again</div>
-                            <div><kbd class="bg-gray-600 px-1 rounded">Esc</kbd> Dismiss</div>
-                        </div>
+                <!-- AI Assistant Shortcuts -->
+                <div class="bottom-bar-shortcuts flex items-center space-x-2 sm:space-x-4 text-xs text-gray-400">
+                    <div class="flex items-center space-x-1">
+                        <kbd class="bg-gray-700 px-1 sm:px-2 py-1 rounded border border-gray-600 text-xs">Tab</kbd>
+                        <span class="hidden sm:inline">Accept</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <kbd class="bg-gray-700 px-1 sm:px-2 py-1 rounded border border-gray-600 text-xs">⇧Tab</kbd>
+                        <span class="hidden sm:inline">Try again</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <kbd class="bg-gray-700 px-1 sm:px-2 py-1 rounded border border-gray-600 text-xs">Esc</kbd>
+                        <span class="hidden sm:inline">Dismiss</span>
                     </div>
                 </div>
             </div>
-        </aside>
+        </div>
     </div>
 
     <!-- Modal for Create/Edit Text -->
@@ -375,6 +421,24 @@
         
         if (!userButton && !userDropdown.contains(event.target)) {
             userDropdown.classList.add('hidden');
+        }
+    });
+
+    // Sidebar toggle function
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('sidebar-hidden');
+        
+        // Save state to localStorage
+        const isHidden = sidebar.classList.contains('sidebar-hidden');
+        localStorage.setItem('sidebarHidden', isHidden);
+    }
+
+    // Restore sidebar state on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+        if (sidebarHidden) {
+            document.getElementById('sidebar').classList.add('sidebar-hidden');
         }
     });
 
