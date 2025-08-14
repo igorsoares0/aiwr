@@ -53,9 +53,7 @@ class StripeService:
                 }
             }
             
-            # Add trial only if user is in trial status
-            if user.subscription_status == 'trial':
-                subscription_data['trial_period_days'] = 1
+            # Trial is handled locally, Stripe subscription starts immediately
             
             # Create checkout session
             session = stripe.checkout.Session.create(

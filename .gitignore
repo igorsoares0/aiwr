@@ -76,7 +76,7 @@ htmlcov/
 instance/
 
 # Images and media (temporary files)
-*.png
+#*.png
 *.jpg
 *.jpeg
 *.gif

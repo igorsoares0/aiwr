@@ -13,7 +13,7 @@ def subscription_required(f):
         # Check if user has valid access (trial or paid)
         if not current_user.has_valid_access:
             # If trial expired, redirect to pricing
-            if current_user.subscription_status == 'trial':
+            if current_user.subscription_status in ['trial', 'trial_expired']:
                 flash('Your free trial has expired. Please choose a plan to continue.', 'warning')
                 return redirect(url_for('billing.pricing'))
             
