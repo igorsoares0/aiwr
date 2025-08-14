@@ -27,6 +27,7 @@ class ModernAIEditor {
         this.editor.addEventListener('input', (e) => this.handleTextInput(e));
         this.editor.addEventListener('keydown', (e) => this.handleKeyDown(e));
         this.titleInput.addEventListener('input', (e) => this.handleTitleInput(e));
+        this.titleInput.addEventListener('keydown', (e) => this.handleTitleKeyDown(e));
         
         // Button event listeners
         this.acceptBtn.addEventListener('click', () => this.acceptSuggestion());
@@ -40,10 +41,28 @@ class ModernAIEditor {
     }
     
     handleTitleInput(event) {
+        // Clear any existing suggestions when title changes
         this.clearSuggestion();
         
-        if (this.titleInput.value.trim() && this.getTextContent().trim()) {
-            this.debouncedAIRequest();
+        // Schedule auto-save but don't trigger AI suggestions for title
+        if (window.scheduleAutoSave) {
+            window.scheduleAutoSave();
+        }
+    }
+    
+    handleTitleKeyDown(event) {
+        // Prevent Enter key from triggering any AI generation in title
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            // Instead, focus on the editor when Enter is pressed in title
+            this.editor.focus();
+            // Position cursor at the end of editor content
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(this.editor);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
         }
     }
     
