@@ -3,14 +3,14 @@
 {% block title %}Dashboard - Writify{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-900 text-white">
+<div class="min-h-screen">
     <!-- Navigation Bar -->
-    <nav class="border-b border-gray-800 bg-gray-900/95 backdrop-blur-sm sticky top-0 z-50">
+    <nav class="border-b border-gray-800 bg-black/95 backdrop-blur-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo and Sidebar Toggle -->
                 <div class="flex items-center space-x-4">
-                    <button onclick="toggleSidebar()" class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                    <button onclick="toggleSidebar()" class="p-2 text-gray-400 hover:text-white hover:bg-gray-900 rounded-md transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
@@ -22,22 +22,22 @@
                 <div class="flex items-center space-x-4">
                     <!-- Subscription Status Badge -->
                     {% if is_trial_active %}
-                        <div class="flex items-center space-x-2 px-3 py-1 bg-blue-900/50 border border-blue-700 rounded-full">
+                        <div class="flex items-center space-x-2 px-3 py-1 bg-blue-950/80 border border-blue-800 rounded-full">
                             <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
                             <span class="text-xs text-blue-300 font-medium">Trial: {{ days_left_in_trial }} days left</span>
                         </div>
                     {% elif subscription_status == 'trial' %}
-                        <div class="flex items-center space-x-2 px-3 py-1 bg-red-900/50 border border-red-700 rounded-full">
+                        <div class="flex items-center space-x-2 px-3 py-1 bg-red-950/80 border border-red-800 rounded-full">
                             <div class="w-2 h-2 bg-red-400 rounded-full"></div>
                             <span class="text-xs text-red-300 font-medium">Trial Expired</span>
                         </div>
                     {% elif is_subscription_active %}
-                        <div class="flex items-center space-x-2 px-3 py-1 bg-green-900/50 border border-green-700 rounded-full">
+                        <div class="flex items-center space-x-2 px-3 py-1 bg-green-950/80 border border-green-800 rounded-full">
                             <div class="w-2 h-2 bg-green-400 rounded-full"></div>
                             <span class="text-xs text-green-300 font-medium capitalize">{{ subscription_plan }} Plan</span>
                         </div>
                     {% elif subscription_status == 'past_due' %}
-                        <div class="flex items-center space-x-2 px-3 py-1 bg-orange-900/50 border border-orange-700 rounded-full">
+                        <div class="flex items-center space-x-2 px-3 py-1 bg-orange-950/80 border border-orange-800 rounded-full">
                             <div class="w-2 h-2 bg-orange-400 rounded-full"></div>
                             <span class="text-xs text-orange-300 font-medium">Payment Required</span>
                         </div>
@@ -45,11 +45,11 @@
 
                     <!-- User Menu Button -->
                     <div class="relative">
-                        <button onclick="document.getElementById('user-dropdown').classList.toggle('hidden')" class="flex items-center space-x-3 hover:bg-gray-800 px-3 py-2 rounded-md transition-colors">
+                        <button onclick="document.getElementById('user-dropdown').classList.toggle('hidden')" class="flex items-center space-x-3 hover:bg-gray-900 px-3 py-2 rounded-md transition-colors">
                             {% if user.avatar_url %}
                                 <img src="{{ user.avatar_url }}" alt="{{ user.full_name }}" class="w-8 h-8 rounded-full">
                             {% else %}
-                                <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                                <div class="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
                                     <span class="text-sm font-medium">{{ user.first_name[0] }}{{ user.last_name[0] }}</span>
                                 </div>
                             {% endif %}
@@ -60,20 +60,20 @@
                         </button>
                         
                         <!-- User Dropdown -->
-                        <div id="user-dropdown" class="hidden absolute right-0 top-12 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-md shadow-lg z-50">
+                        <div id="user-dropdown" class="hidden absolute right-0 top-12 mt-2 w-48 bg-black border border-gray-800 rounded-md shadow-lg z-50">
                             <div class="py-1">
-                                <a href="{{ url_for('billing.index') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Billing & Subscription</a>
+                                <a href="{{ url_for('billing.index') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-900">Billing & Subscription</a>
                                 {% if not has_valid_access %}
-                                    <a href="{{ url_for('billing.pricing') }}" class="block px-4 py-2 text-sm text-blue-300 hover:bg-gray-700">Upgrade Plan</a>
+                                    <a href="{{ url_for('billing.pricing') }}" class="block px-4 py-2 text-sm text-blue-300 hover:bg-gray-900">Upgrade Plan</a>
                                 {% endif %}
-                                <div class="border-t border-gray-700 my-1"></div>
-                                <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Sign out</a>
+                                <div class="border-t border-gray-800 my-1"></div>
+                                <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-900">Sign out</a>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Create New Button -->
-                    <button onclick="startNewText()" class="inline-flex items-center px-3 py-2 border border-gray-600 rounded-md text-sm font-medium text-white hover:bg-gray-800 transition-colors">
+                    <button onclick="startNewText()" class="inline-flex items-center px-3 py-2 border border-gray-800 rounded-md text-sm font-medium text-white hover:bg-gray-900 transition-colors">
                         Create new
                         <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -87,57 +87,57 @@
     <!-- Main Content -->
     <div class="flex">
         <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-gray-800 border-r border-gray-700 min-h-screen transition-all duration-300 ease-in-out">
-            <div class="p-6">
+        <aside id="sidebar" class="w-64 bg-black border-r border-gray-800 min-h-screen transition-all duration-300 ease-in-out">
+            <div class="p-4">
                 <!-- Search -->
                 <div class="mb-6">
                     <div class="relative">
-                        <input type="text" placeholder="Search..." class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
-                        <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <input type="text" placeholder="Search..." class="w-full px-3 py-2 bg-gray-900/50 border-0 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-700">
+                        <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
                 </div>
 
                 <!-- Navigation Menu -->
-                <nav class="space-y-2">
-                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-white bg-gray-700 rounded-md">
-                        <svg class="mr-3 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                <nav class="space-y-1">
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-900 rounded-lg transition-colors">
+                        <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         History
                     </a>
                 </nav>
 
                 <!-- Text Documents (only for active text) -->
-                <div class="mt-8" id="text-documents-section" style="display: none;">
+                <div class="mt-6" id="text-documents-section" style="display: none;">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Text Documents</h3>
-                        <button onclick="showAddDocumentModal()" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                        <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wide">Text Documents</h3>
+                        <button onclick="showAddDocumentModal()" class="text-xs text-blue-400 hover:text-blue-300 transition-colors font-medium">
                             + Add
                         </button>
                     </div>
-                    <div id="text-documents-list" class="space-y-2">
+                    <div id="text-documents-list" class="space-y-1">
                         <!-- Documents associated with current text will be loaded here -->
                     </div>
                 </div>
 
                 <!-- All User Documents -->
-                <div class="mt-8">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">All Documents</h3>
-                    <div id="documents-list" class="space-y-2">
+                <div class="mt-6">
+                    <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">All Documents</h3>
+                    <div id="documents-list" class="space-y-1">
                         {% for document in documents %}
-                        <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors" data-document-id="{{ document.id }}">
+                        <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-900 rounded-lg cursor-pointer transition-colors group" data-document-id="{{ document.id }}">
                             <div class="flex items-center flex-1 min-w-0">
-                                <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="mr-3 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                                 <div class="flex-1 min-w-0">
                                     <div class="text-sm font-medium text-white truncate">{{ document.original_filename }}</div>
-                                    <div class="text-xs text-gray-400">{{ document.file_type.upper() }} • {{ (document.file_size / 1024) | round(1) }}KB</div>
+                                    <div class="text-xs text-gray-500">{{ document.file_type.upper() }} • {{ (document.file_size / 1024) | round(1) }}KB</div>
                                 </div>
                             </div>
-                            <button onclick="deleteDocument({{ document.id }})" class="ml-2 text-gray-400 hover:text-red-400 transition-colors">
+                            <button onclick="deleteDocument({{ document.id }})" class="ml-2 text-gray-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
@@ -149,7 +149,7 @@
                     <!-- Upload Button -->
                     <div class="mt-3">
                         <input type="file" id="file-upload" accept=".pdf,.docx" class="hidden" onchange="uploadDocument()">
-                        <button onclick="document.getElementById('file-upload').click()" class="w-full flex items-center justify-center px-3 py-2 border border-gray-600 text-gray-300 text-sm rounded-md hover:bg-gray-700 transition-colors">
+                        <button onclick="document.getElementById('file-upload').click()" class="w-full flex items-center justify-center px-3 py-2 border border-gray-800 text-gray-400 text-sm rounded-lg hover:bg-gray-900 hover:text-white transition-colors">
                             <svg class="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                             </svg>
@@ -159,27 +159,27 @@
                 </div>
 
                 <!-- Saved Texts -->
-                <div class="mt-8">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">My Texts</h3>
-                    <div id="texts-list" class="space-y-2">
+                <div class="mt-6">
+                    <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">My Texts</h3>
+                    <div id="texts-list" class="space-y-1">
                         {% for text in texts %}
-                        <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors" data-text-id="{{ text.id }}">
+                        <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-900 rounded-lg cursor-pointer transition-colors group" data-text-id="{{ text.id }}">
                             <div class="flex items-center flex-1 min-w-0" onclick="loadTextIntoEditor({{ text.id }})">
-                                <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="mr-3 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                                 <div class="flex-1 min-w-0">
                                     <div class="text-sm font-medium text-white truncate">{{ text.title }}</div>
-                                    <div class="text-xs text-gray-400">{{ text.updated_at.strftime('%m/%d/%Y') }}</div>
+                                    <div class="text-xs text-gray-500">{{ text.updated_at.strftime('%m/%d/%Y') }}</div>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-1">
-                                <button onclick="editText({{ text.id }})" class="text-gray-400 hover:text-blue-400 transition-colors">
+                            <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="editText({{ text.id }})" class="text-gray-500 hover:text-blue-400 transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                     </svg>
                                 </button>
-                                <button onclick="deleteText({{ text.id }})" class="text-gray-400 hover:text-red-400 transition-colors">
+                                <button onclick="deleteText({{ text.id }})" class="text-gray-500 hover:text-red-400 transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                     </svg>
@@ -196,41 +196,41 @@
         <!-- Main Content Area -->
         <main class="flex-1 flex flex-col">
             <!-- Title Input -->
-            <div class="border-b border-gray-700">
+            <div class="border-b border-gray-800">
                 <div class="max-w-4xl mx-auto">
-                    <input type="text" id="title-input" placeholder="Enter your writing title..." class="w-full text-2xl font-bold text-white bg-transparent border-none outline-none placeholder-gray-500" 
-                           style="padding: 24px; margin: 0; box-sizing: border-box;" value="" />
+                    <input type="text" id="title-input" placeholder="Untitled" class="w-full text-3xl font-semibold text-white bg-transparent border-none outline-none placeholder-gray-600" 
+                           style="padding: 32px 24px 24px 24px; margin: 0; box-sizing: border-box; line-height: 1.2;" value="" />
                 </div>
             </div>
 
             <!-- Writing Area -->
             <div class="flex-1 p-6">
                 <div class="max-w-4xl mx-auto">
-                    <div class="bg-gray-800 rounded-lg border border-gray-700 min-h-96">
+                    <div class="bg-transparent min-h-96">
                         <div class="relative">
                             <!-- Modern AI Editor - Single Layer -->
                             <div id="editor-container" class="relative">
                                 <div id="editor" 
                                      contenteditable="true" 
                                      class="w-full min-h-96 bg-transparent border-none outline-none text-gray-300 resize-none"
-                                     style="font-family: ui-serif, Georgia, Cambria, serif; line-height: 1.7; padding: 24px; margin: 0; box-sizing: border-box; overflow: visible;"
+                                     style="font-family: ui-serif, Georgia, Cambria, serif; font-size: 16px; line-height: 1.8; padding: 24px; margin: 0; box-sizing: border-box; overflow: visible;"
                                      data-placeholder="Start writing... AI suggestions will appear inline as you type.">
                                 </div>
                                 
                                 <!-- Floating Suggestion Controls -->
-                                <div id="suggestion-controls" class="hidden fixed z-[60] bg-gray-800 rounded-lg shadow-xl border border-gray-600">
+                                <div id="suggestion-controls" class="hidden fixed z-[60] bg-black rounded-lg shadow-xl border border-gray-800">
                                     <div class="flex items-center space-x-3 px-4 py-2 text-sm">
-                                        <button id="accept-btn" class="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                        <button id="accept-btn" class="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                             <span>Accept</span>
-                                            <kbd class="ml-1 px-1 py-0.5 bg-blue-700 text-xs rounded">Tab</kbd>
+                                            <kbd class="px-1.5 py-0.5 bg-blue-700 text-xs rounded font-mono">Tab</kbd>
                                         </button>
-                                        <button id="try-again-btn" class="flex items-center space-x-1 px-3 py-1 border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors">
+                                        <button id="try-again-btn" class="flex items-center space-x-2 px-3 py-1.5 border border-gray-800 text-gray-300 rounded-lg hover:bg-gray-900 transition-colors">
                                             <span>Try Again</span>
-                                            <kbd class="ml-1 px-1 py-0.5 bg-gray-600 text-xs rounded">Shift+Tab</kbd>
+                                            <kbd class="px-1.5 py-0.5 bg-gray-900 text-xs rounded font-mono">⇧Tab</kbd>
                                         </button>
-                                        <button id="dismiss-btn" class="flex items-center space-x-1 px-3 py-1 border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors">
+                                        <button id="dismiss-btn" class="flex items-center space-x-2 px-3 py-1.5 border border-gray-800 text-gray-300 rounded-lg hover:bg-gray-900 transition-colors">
                                             <span>Dismiss</span>
-                                            <kbd class="ml-1 px-1 py-0.5 bg-gray-600 text-xs rounded">Esc</kbd>
+                                            <kbd class="px-1.5 py-0.5 bg-gray-900 text-xs rounded font-mono">Esc</kbd>
                                         </button>
                                     </div>
                                 </div>
@@ -242,24 +242,22 @@
                                     content: attr(data-placeholder);
                                     color: #6b7280;
                                     pointer-events: none;
+                                    font-style: italic;
                                 }
                                 #editor:focus {
                                     outline: none;
                                 }
                                 .ai-suggestion {
                                     color: #6b7280;
-                                    background: rgba(59, 130, 246, 0.1);
-                                    border-radius: 2px;
-                                    padding: 0 2px;
+                                    background: rgba(59, 130, 246, 0.08);
+                                    border-radius: 4px;
+                                    padding: 0 4px;
                                 }
                                 /* Auto-expanding editor */
                                 #editor {
                                     overflow-wrap: break-word;
                                     word-wrap: break-word;
                                     white-space: pre-wrap;
-                                }
-                                .bg-gray-800.rounded-lg.border.border-gray-700 {
-                                    overflow: visible;
                                 }
                                 
                                 /* Fix sidebar spacing and prevent overlap */
@@ -308,40 +306,40 @@
     </div>
 
     <!-- Bottom Bar -->
-    <div class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-40">
+    <div class="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bottom-bar-content flex items-center justify-between py-3">
                 <!-- Writing Stats -->
-                <div class="flex items-center space-x-4 sm:space-x-6 text-sm">
-                    <div class="flex items-center space-x-1 sm:space-x-2">
-                        <span class="text-gray-400 hidden sm:inline">Words:</span>
-                        <span class="text-gray-400 sm:hidden">W:</span>
-                        <span id="word-count" class="text-white font-medium">0</span>
+                <div class="flex items-center space-x-6 text-sm">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-500 hidden sm:inline">Words</span>
+                        <span class="text-gray-500 sm:hidden">W</span>
+                        <span id="word-count" class="text-gray-300 font-medium">0</span>
                     </div>
-                    <div class="flex items-center space-x-1 sm:space-x-2">
-                        <span class="text-gray-400 hidden sm:inline">Characters:</span>
-                        <span class="text-gray-400 sm:hidden">C:</span>
-                        <span id="char-count" class="text-white font-medium">0</span>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-500 hidden sm:inline">Characters</span>
+                        <span class="text-gray-500 sm:hidden">C</span>
+                        <span id="char-count" class="text-gray-300 font-medium">0</span>
                     </div>
-                    <div class="flex items-center space-x-1 sm:space-x-2">
-                        <span class="text-gray-400 hidden sm:inline">Reading time:</span>
-                        <span class="text-gray-400 sm:hidden">RT:</span>
-                        <span id="reading-time" class="text-white font-medium">0 min</span>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-500 hidden sm:inline">Reading time</span>
+                        <span class="text-gray-500 sm:hidden">RT</span>
+                        <span id="reading-time" class="text-gray-300 font-medium">0 min</span>
                     </div>
                 </div>
 
                 <!-- AI Assistant Shortcuts -->
-                <div class="bottom-bar-shortcuts flex items-center space-x-2 sm:space-x-4 text-xs text-gray-400">
-                    <div class="flex items-center space-x-1">
-                        <kbd class="bg-gray-700 px-1 sm:px-2 py-1 rounded border border-gray-600 text-xs">Tab</kbd>
+                <div class="bottom-bar-shortcuts flex items-center space-x-4 text-xs text-gray-500">
+                    <div class="flex items-center space-x-1.5">
+                        <kbd class="bg-gray-900 px-2 py-1 rounded-lg border border-gray-800 text-xs font-mono">Tab</kbd>
                         <span class="hidden sm:inline">Accept</span>
                     </div>
-                    <div class="flex items-center space-x-1">
-                        <kbd class="bg-gray-700 px-1 sm:px-2 py-1 rounded border border-gray-600 text-xs">⇧Tab</kbd>
+                    <div class="flex items-center space-x-1.5">
+                        <kbd class="bg-gray-900 px-2 py-1 rounded-lg border border-gray-800 text-xs font-mono">⇧Tab</kbd>
                         <span class="hidden sm:inline">Try again</span>
                     </div>
-                    <div class="flex items-center space-x-1">
-                        <kbd class="bg-gray-700 px-1 sm:px-2 py-1 rounded border border-gray-600 text-xs">Esc</kbd>
+                    <div class="flex items-center space-x-1.5">
+                        <kbd class="bg-gray-900 px-2 py-1 rounded-lg border border-gray-800 text-xs font-mono">Esc</kbd>
                         <span class="hidden sm:inline">Dismiss</span>
                     </div>
                 </div>
@@ -351,8 +349,8 @@
 
     <!-- Modal for Create/Edit Text -->
     <div id="text-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
-            <div class="flex justify-between items-center p-6 border-b border-gray-700">
+        <div class="bg-black rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b border-gray-800">
                 <h3 id="modal-title" class="text-lg font-semibold text-white">New Text</h3>
                 <button onclick="closeTextModal()" class="text-gray-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,17 +363,17 @@
                     <div class="mb-4">
                         <label for="text-title" class="block text-sm font-medium text-gray-300 mb-2">Title</label>
                         <input type="text" id="text-title" name="title" required
-                               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               class="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                placeholder="Enter text title...">
                     </div>
                     <div class="mb-4">
                         <label for="text-content" class="block text-sm font-medium text-gray-300 mb-2">Content</label>
                         <textarea id="text-content" name="content" rows="15"
-                                  class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                  class="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                   placeholder="Write your text here..."></textarea>
                     </div>
                 </div>
-                <div class="flex justify-end space-x-3 p-6 border-t border-gray-700">
+                <div class="flex justify-end space-x-3 p-6 border-t border-gray-800">
                     <button type="button" onclick="closeTextModal()" 
                             class="px-4 py-2 text-gray-300 hover:text-white transition-colors">
                         Cancel
@@ -391,8 +389,8 @@
 
     <!-- Modal for Add Documents to Text -->
     <div id="add-document-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            <div class="flex justify-between items-center p-6 border-b border-gray-700">
+        <div class="bg-black rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b border-gray-800">
                 <h3 class="text-lg font-semibold text-white">Add Documents to Text</h3>
                 <button onclick="closeAddDocumentModal()" class="text-gray-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -651,7 +649,7 @@
         const currentDate = new Date(text.updated_at).toLocaleDateString();
         
         const textElement = document.createElement('div');
-        textElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors bg-gray-700';
+        textElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-900 rounded-lg cursor-pointer transition-colors group';
         textElement.setAttribute('data-text-id', text.id);
         
         textElement.innerHTML = `
@@ -795,7 +793,7 @@
         
         // Remove active styling from all texts
         document.querySelectorAll('[data-text-id]').forEach(el => {
-            el.classList.remove('bg-gray-700');
+            el.classList.remove('bg-gray-900');
         });
         
         // Re-enable auto-save quickly
@@ -841,9 +839,9 @@
                 
                 // Update active text styling
                 document.querySelectorAll('[data-text-id]').forEach(el => {
-                    el.classList.remove('bg-gray-700');
+                    el.classList.remove('bg-gray-900');
                 });
-                document.querySelector(`[data-text-id="${textId}"]`).classList.add('bg-gray-700');
+                document.querySelector(`[data-text-id="${textId}"]`).classList.add('bg-gray-900');
             }
         } catch (error) {
             console.error('Failed to load text:', error);
@@ -862,7 +860,7 @@
     // Auto-resize editor function
     function autoResizeEditor() {
         const editor = document.getElementById('editor');
-        const container = editor.closest('.bg-gray-800.rounded-lg.border.border-gray-700');
+        const container = editor.parentElement.parentElement;
         
         // Reset height to auto to get the natural height
         editor.style.height = 'auto';
@@ -927,7 +925,7 @@
                 if (result.documents.length > 0) {
                     result.documents.forEach(doc => {
                         const docElement = document.createElement('div');
-                        docElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 bg-gray-700 rounded-md';
+                        docElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 bg-gray-900 rounded-lg';
                         docElement.innerHTML = `
                             <div class="flex items-center flex-1 min-w-0">
                                 <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -980,7 +978,7 @@
                     
                     result.documents.forEach(doc => {
                         const docElement = document.createElement('div');
-                        docElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md cursor-pointer transition-colors';
+                        docElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-900 rounded-lg cursor-pointer transition-colors';
                         docElement.innerHTML = `
                             <div class="flex items-center flex-1 min-w-0">
                                 <svg class="mr-3 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1081,7 +1079,7 @@
         setTimeout(function() {
             if (!sessionStorage.getItem('subscription_notified')) {
                 const notification = document.createElement('div');
-                notification.className = 'fixed top-20 right-4 bg-red-900 border border-red-700 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
+                notification.className = 'fixed top-20 right-4 bg-red-950 border border-red-800 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
                 notification.innerHTML = `
                     <div class="flex items-start">
                         <svg class="w-5 h-5 text-red-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1099,7 +1097,7 @@
                                 {% endif %}
                             </p>
                             <div class="flex space-x-2">
-                                <a href="{{ url_for('billing.pricing') }}" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors">
+                                <a href="{{ url_for('billing.pricing') }}" class="text-xs bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded transition-colors">
                                     {% if subscription_status == 'past_due' %}Update Payment{% else %}Choose Plan{% endif %}
                                 </a>
                                 <button onclick="this.closest('.fixed').remove(); sessionStorage.setItem('subscription_notified', 'true');" class="text-xs text-gray-400 hover:text-white">
@@ -1125,7 +1123,7 @@
         setTimeout(function() {
             if (!sessionStorage.getItem('trial_warning_shown')) {
                 const notification = document.createElement('div');
-                notification.className = 'fixed top-20 right-4 bg-orange-900 border border-orange-700 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
+                notification.className = 'fixed top-20 right-4 bg-orange-950 border border-orange-800 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
                 notification.innerHTML = `
                     <div class="flex items-start">
                         <svg class="w-5 h-5 text-orange-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1137,7 +1135,7 @@
                                 Only {{ days_left_in_trial }} day{{ 's' if days_left_in_trial != 1 else '' }} left in your trial. Choose a plan to continue.
                             </p>
                             <div class="flex space-x-2">
-                                <a href="{{ url_for('billing.pricing') }}" class="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded transition-colors">
+                                <a href="{{ url_for('billing.pricing') }}" class="text-xs bg-orange-700 hover:bg-orange-800 text-white px-3 py-1 rounded transition-colors">
                                     Choose Plan
                                 </a>
                                 <button onclick="this.closest('.fixed').remove(); sessionStorage.setItem('trial_warning_shown', 'true');" class="text-xs text-gray-400 hover:text-white">
