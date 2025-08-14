@@ -38,35 +38,42 @@
                         </div>
                     {% endif %}
 
-                    <div class="flex items-center space-x-3">
-                        {% if user.avatar_url %}
-                            <img src="{{ user.avatar_url }}" alt="{{ user.full_name }}" class="w-8 h-8 rounded-full">
-                        {% else %}
-                            <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                                <span class="text-sm font-medium">{{ user.first_name[0] }}{{ user.last_name[0] }}</span>
+                    <!-- User Menu Button -->
+                    <div class="relative">
+                        <button onclick="document.getElementById('user-dropdown').classList.toggle('hidden')" class="flex items-center space-x-3 hover:bg-gray-800 px-3 py-2 rounded-md transition-colors">
+                            {% if user.avatar_url %}
+                                <img src="{{ user.avatar_url }}" alt="{{ user.full_name }}" class="w-8 h-8 rounded-full">
+                            {% else %}
+                                <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-medium">{{ user.first_name[0] }}{{ user.last_name[0] }}</span>
+                                </div>
+                            {% endif %}
+                            <span class="text-sm font-medium">{{ user.first_name }}</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- User Dropdown -->
+                        <div id="user-dropdown" class="hidden absolute right-0 top-12 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-md shadow-lg z-50">
+                            <div class="py-1">
+                                <a href="{{ url_for('billing.index') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Billing & Subscription</a>
+                                {% if not has_valid_access %}
+                                    <a href="{{ url_for('billing.pricing') }}" class="block px-4 py-2 text-sm text-blue-300 hover:bg-gray-700">Upgrade Plan</a>
+                                {% endif %}
+                                <div class="border-t border-gray-700 my-1"></div>
+                                <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Sign out</a>
                             </div>
-                        {% endif %}
-                        <span class="text-sm font-medium">{{ user.first_name }}</span>
+                        </div>
                     </div>
-                    <button onclick="document.getElementById('create-dropdown').classList.toggle('hidden')" class="inline-flex items-center px-3 py-2 border border-gray-600 rounded-md text-sm font-medium text-white hover:bg-gray-800 transition-colors">
+                    
+                    <!-- Create New Button -->
+                    <button onclick="startNewText()" class="inline-flex items-center px-3 py-2 border border-gray-600 rounded-md text-sm font-medium text-white hover:bg-gray-800 transition-colors">
                         Create new
                         <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
                     </button>
-                    <!-- Dropdown -->
-                    <div id="create-dropdown" class="hidden absolute right-8 top-16 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-md shadow-lg z-50">
-                        <div class="py-1">
-                            <a href="#" onclick="startNewText(); return false;" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">New Text</a>
-                            <div class="border-t border-gray-700 my-1"></div>
-                            <a href="{{ url_for('billing.index') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Billing & Subscription</a>
-                            {% if not has_valid_access %}
-                                <a href="{{ url_for('billing.pricing') }}" class="block px-4 py-2 text-sm text-blue-300 hover:bg-gray-700">Upgrade Plan</a>
-                            {% endif %}
-                            <div class="border-t border-gray-700 my-1"></div>
-                            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Sign out</a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -94,12 +101,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                         </svg>
                         History
-                    </a>
-                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors">
-                        <svg class="mr-3 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                        Collections
                     </a>
                 </nav>
 
@@ -183,15 +184,6 @@
                         {% endfor %}
                     </div>
                     
-                    <!-- New Text Button -->
-                    <div class="mt-3">
-                        <button onclick="createNewText()" class="w-full flex items-center justify-center px-3 py-2 border border-gray-600 text-gray-300 text-sm rounded-md hover:bg-gray-700 transition-colors">
-                            <svg class="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            New Text
-                        </button>
-                    </div>
                 </div>
             </div>
         </aside>
@@ -378,11 +370,11 @@
 <script>
     // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
-        const dropdown = document.getElementById('create-dropdown');
-        const button = event.target.closest('button[onclick*="create-dropdown"]');
+        const userDropdown = document.getElementById('user-dropdown');
+        const userButton = event.target.closest('button[onclick*="user-dropdown"]');
         
-        if (!button && !dropdown.contains(event.target)) {
-            dropdown.classList.add('hidden');
+        if (!userButton && !userDropdown.contains(event.target)) {
+            userDropdown.classList.add('hidden');
         }
     });
 
