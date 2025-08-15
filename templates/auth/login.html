@@ -23,21 +23,9 @@
                 
                 <!-- Google Login Button -->
                 <div>
-                    <div id="g_id_onload"
-                         data-client_id="{{ config['GOOGLE_CLIENT_ID'] }}"
-                         data-callback="handleCredentialResponse"
-                         data-auto_prompt="false">
-                    </div>
                     <div class="w-full">
-                        <button type="button" onclick="googleLogin()" class="w-full flex items-center justify-center px-4 py-3 border border-gray-700 rounded-lg shadow-sm text-sm font-medium text-gray-300 bg-gray-900/50 hover:bg-gray-800/50 transition-colors">
-                            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
-                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                            </svg>
-                            Log in with Google
-                        </button>
+                        <!-- Official Google Button -->
+                        <div id="google-signin-btn" class="w-full"></div>
                     </div>
                 </div>
 
@@ -145,16 +133,82 @@
 {% block scripts %}
 <script>
     function handleCredentialResponse(response) {
+        if (!response.credential) {
+            console.error('No credential received from Google');
+            return;
+        }
+        
+        // Submit the form
         document.getElementById('google-credential').value = response.credential;
         document.getElementById('google-form').submit();
     }
 
-    function googleLogin() {
-        google.accounts.id.initialize({
-            client_id: "{{ config['GOOGLE_CLIENT_ID'] }}",
-            callback: handleCredentialResponse
-        });
-        google.accounts.id.prompt();
+
+    // Wait for Google SDK to load
+    function waitForGoogle() {
+        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            renderOfficialButton();
+            return;
+        }
+        
+        setTimeout(waitForGoogle, 100);
     }
+
+    // Test network connectivity and Google access
+    function testGoogleConnectivity() {
+        const testImg = new Image();
+        testImg.onerror = function() {
+            console.error('Cannot reach Google accounts domain');
+            const container = document.getElementById('google-signin-btn');
+            container.innerHTML = `
+                <div class="w-full p-3 text-sm text-red-300 bg-red-900/20 border border-red-600 rounded-lg">
+                    ❌ Cannot connect to Google services. Please check your internet connection.
+                </div>
+            `;
+        };
+        testImg.src = 'https://accounts.google.com/favicon.ico?' + Date.now();
+    }
+
+    function renderOfficialButton() {
+        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            try {
+                google.accounts.id.initialize({
+                    client_id: "{{ config['GOOGLE_CLIENT_ID'] }}",
+                    callback: handleCredentialResponse
+                });
+                
+                google.accounts.id.renderButton(
+                    document.getElementById('google-signin-btn'),
+                    { 
+                        theme: 'filled_blue', 
+                        size: 'large',
+                        text: 'signin_with',
+                        width: '100%',
+                        logo_alignment: 'left'
+                    }
+                );
+                console.log('✅ Official Google button rendered and ready');
+            } catch (error) {
+                console.error('❌ Failed to render official button:', error);
+                
+                // Fallback: show error message
+                const container = document.getElementById('google-signin-btn');
+                container.innerHTML = `
+                    <div class="w-full p-3 text-sm text-red-300 bg-red-900/20 border border-red-600 rounded-lg">
+                        ❌ Failed to load Google sign-in button. Please reload the page.
+                    </div>
+                `;
+            }
+        } else {
+            // Google not loaded yet, try again
+            setTimeout(renderOfficialButton, 500);
+        }
+    }
+
+    // Start when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        testGoogleConnectivity();
+        waitForGoogle();
+    });
 </script>
 {% endblock %}

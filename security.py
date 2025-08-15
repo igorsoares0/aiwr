@@ -183,12 +183,13 @@ class SecurityHeaders:
             # Content Security Policy
             csp = (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://cdn.tailwindcss.com; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://gsi.google.com https://cdn.tailwindcss.com; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; "
                 "font-src 'self' https://fonts.gstatic.com; "
-                "img-src 'self' data: https:; "
-                "connect-src 'self' https://accounts.google.com; "
-                "frame-src https://accounts.google.com;"
+                "img-src 'self' data: https: https://lh3.googleusercontent.com; "
+                "connect-src 'self' https://accounts.google.com https://gsi.google.com; "
+                "frame-src https://accounts.google.com; "
+                "frame-ancestors 'none';"
             )
             response.headers['Content-Security-Policy'] = csp
             

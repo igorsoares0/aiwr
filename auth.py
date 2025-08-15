@@ -5,6 +5,7 @@ from google.auth.transport import requests
 from models import db, User, PasswordResetToken, EmailVerificationToken
 from forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm
 from utils import send_email
+from google_auth_utils import GoogleAuthValidator
 import secrets
 
 auth_bp = Blueprint('auth', __name__)
@@ -77,56 +78,107 @@ def register():
 def google_login():
     token = request.form.get('credential')
     if not token:
-        flash('Google authentication failed.', 'error')
+        current_app.logger.warning(f"Google login attempt without token from IP: {request.remote_addr}")
+        flash('Google authentication failed. No credential received.', 'error')
+        return redirect(url_for('auth.login'))
+    
+    # Validate configuration first
+    config_valid, config_msg = GoogleAuthValidator.validate_client_configuration()
+    if not config_valid:
+        current_app.logger.error(f"Google OAuth configuration error: {config_msg}")
+        flash('Google authentication is not properly configured. Please contact support.', 'error')
+        return redirect(url_for('auth.login'))
+    
+    # Validate token structure
+    token_valid, token_msg = GoogleAuthValidator.validate_token_structure(token)
+    if not token_valid:
+        current_app.logger.warning(f"Invalid Google token structure: {token_msg} from IP: {request.remote_addr}")
+        flash('Invalid authentication token received.', 'error')
         return redirect(url_for('auth.login'))
     
     try:
+        # Verify the token with Google
         idinfo = id_token.verify_oauth2_token(
             token, requests.Request(), current_app.config['GOOGLE_CLIENT_ID']
         )
         
+        # Validate the issuer
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            current_app.logger.warning(f"Invalid Google token issuer: {idinfo.get('iss')} from IP: {request.remote_addr}")
             flash('Invalid Google token.', 'error')
             return redirect(url_for('auth.login'))
         
-        google_id = idinfo['sub']
-        email = idinfo['email'].lower()
-        first_name = idinfo.get('given_name', '')
-        last_name = idinfo.get('family_name', '')
-        avatar_url = idinfo.get('picture', '')
+        # Extract and validate user information
+        user_info = GoogleAuthValidator.extract_user_info_safely(idinfo)
         
-        user = User.query.filter_by(google_id=google_id).first()
+        current_app.logger.info(f"Google authentication successful for email: {user_info['email']}")
+        GoogleAuthValidator.log_authentication_attempt(user_info['email'], True)
+        
+        # Find or create user
+        user = User.query.filter_by(google_id=user_info['google_id']).first()
         if not user:
-            user = User.query.filter_by(email=email).first()
+            user = User.query.filter_by(email=user_info['email']).first()
             if user:
                 # Link existing account with Google
-                user.google_id = google_id
-                user.avatar_url = avatar_url
+                current_app.logger.info(f"Linking existing account {user_info['email']} with Google ID: {user_info['google_id']}")
+                user.google_id = user_info['google_id']
+                user.avatar_url = user_info['avatar_url']
                 user.email_verified = True
             else:
                 # Create new user
+                current_app.logger.info(f"Creating new Google user: {user_info['email']}")
                 user = User(
-                    email=email,
-                    first_name=first_name,
-                    last_name=last_name,
-                    google_id=google_id,
-                    avatar_url=avatar_url,
+                    email=user_info['email'],
+                    first_name=user_info['first_name'],
+                    last_name=user_info['last_name'],
+                    google_id=user_info['google_id'],
+                    avatar_url=user_info['avatar_url'],
                     email_verified=True
                 )
                 # Start 7-day trial automatically for new Google users
                 user.start_trial()
             
-            db.session.add(user)
-            db.session.commit()
+            try:
+                db.session.add(user)
+                db.session.commit()
+            except Exception as db_error:
+                db.session.rollback()
+                current_app.logger.error(f"Database error during Google login for {user_info['email']}: {str(db_error)}")
+                GoogleAuthValidator.log_authentication_attempt(user_info['email'], False, f"Database error: {str(db_error)}")
+                flash('An error occurred while creating your account. Please try again.', 'error')
+                return redirect(url_for('auth.login'))
         
+        # Log successful login
         login_user(user, remember=True)
+        current_app.logger.info(f"User {user_info['email']} logged in successfully via Google")
+        
+        # Check for next parameter
+        next_page = request.args.get('next')
+        if next_page and next_page.startswith('/'):  # Security: only allow relative URLs
+            return redirect(next_page)
+        
         return redirect(url_for('main.dashboard'))
         
     except ValueError as e:
-        flash('Google authentication failed.', 'error')
+        error_msg = str(e)
+        current_app.logger.warning(f"Google token verification failed: {error_msg} from IP: {request.remote_addr}")
+        GoogleAuthValidator.log_authentication_attempt("unknown", False, error_msg)
+        
+        if 'Invalid token' in error_msg or 'expired' in error_msg.lower():
+            flash('The Google authentication token is invalid or expired. Please try again.', 'error')
+        elif 'Wrong issuer' in error_msg:
+            flash('Invalid authentication source. Please try again.', 'error')
+        elif 'missing' in error_msg.lower():
+            flash('Required information is missing from Google. Please try again.', 'error')
+        else:
+            flash('Google authentication failed. Please try again.', 'error')
+            
         return redirect(url_for('auth.login'))
+        
     except Exception as e:
-        flash('An error occurred during Google authentication.', 'error')
+        current_app.logger.error(f"Unexpected error during Google authentication: {str(e)} from IP: {request.remote_addr}")
+        GoogleAuthValidator.log_authentication_attempt("unknown", False, f"Unexpected error: {str(e)}")
+        flash('An unexpected error occurred during Google authentication. Please try again.', 'error')
         return redirect(url_for('auth.login'))
 
 @auth_bp.route('/logout')
@@ -243,3 +295,4 @@ def send_password_reset_email(user, token):
     '''
     
     send_email(subject, user.email, html_body)
+

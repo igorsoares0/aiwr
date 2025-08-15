@@ -36,6 +36,17 @@ def create_app():
     # Initialize subscription middleware
     init_subscription_middleware(app)
     
+    # Make app config available in templates
+    @app.context_processor
+    def inject_config():
+        """Make app configuration available in templates"""
+        return {
+            'config': {
+                'GOOGLE_CLIENT_ID': app.config.get('GOOGLE_CLIENT_ID'),
+                'DEBUG': app.debug
+            }
+        }
+    
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
@@ -57,7 +68,7 @@ def create_app():
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['X-XSS-Protection'] = '1; mode=block'
-        response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com https://checkout.stripe.com https://js.stripe.com https://billing.stripe.com"
+        response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://gsi.google.com https://www.google.com https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com https://checkout.stripe.com https://js.stripe.com https://billing.stripe.com"
         return response
     
     return app
