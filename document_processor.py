@@ -114,9 +114,9 @@ class DocumentProcessor:
             print(f"Error processing file: {str(e)}")
             return {'error': 'Error processing file. Please try again.'}
     
-    def get_document_context(self, documents, max_length: int = 1500) -> str:
+    def get_document_context(self, documents, max_length: int = 8000) -> str:
         """
-        Get combined context from multiple documents, truncated to max_length
+        Get combined context from multiple documents, with intelligent extraction
         
         Args:
             documents: List of Document model instances
@@ -129,16 +129,69 @@ class DocumentProcessor:
             return ""
         
         combined_text = ""
+        chars_per_doc = 2000  # Increased from 500 to 2000 chars per document
+        
         for doc in documents:
             if doc.content_text:
                 combined_text += f"\n--- From {doc.original_filename} ---\n"
-                combined_text += doc.content_text[:500] + "\n"  # 500 chars per doc
+                
+                # Extract intelligently: beginning + end for better context
+                doc_text = doc.content_text.strip()
+                if len(doc_text) <= chars_per_doc:
+                    # Document is small enough, use all of it
+                    combined_text += doc_text + "\n"
+                else:
+                    # Document is large, extract beginning and end
+                    half_chars = chars_per_doc // 2
+                    beginning = self._extract_complete_sentences(doc_text[:half_chars])
+                    ending = self._extract_complete_sentences(doc_text[-half_chars:], from_end=True)
+                    
+                    combined_text += beginning
+                    if beginning and ending:
+                        combined_text += "\n[...document continues...]\n"
+                    combined_text += ending + "\n"
         
-        # Truncate to max_length
+        # Truncate to max_length if needed
         if len(combined_text) > max_length:
             combined_text = combined_text[:max_length] + "..."
         
         return combined_text.strip()
+    
+    def _extract_complete_sentences(self, text: str, from_end: bool = False) -> str:
+        """
+        Extract text while preserving complete sentences/paragraphs
+        
+        Args:
+            text: Text to extract from
+            from_end: If True, extract from the end of text
+            
+        Returns:
+            Text with complete sentences
+        """
+        if not text:
+            return ""
+        
+        # Find sentence boundaries (. ! ? followed by space/newline)
+        import re
+        sentence_endings = re.finditer(r'[.!?]\s+', text)
+        positions = [match.end() for match in sentence_endings]
+        
+        if not positions:
+            # No clear sentence boundaries, return as-is
+            return text
+        
+        if from_end:
+            # Find the first complete sentence from the end
+            for pos in reversed(positions):
+                if len(text) - pos <= len(text) * 0.8:  # Don't cut too much
+                    return text[pos:].strip()
+            return text  # Fallback
+        else:
+            # Find the last complete sentence from the beginning
+            for pos in reversed(positions):
+                if pos <= len(text) * 0.8:  # Don't cut too much
+                    return text[:pos].strip()
+            return text  # Fallback
     
     def delete_file(self, file_path: str) -> bool:
         """Delete uploaded file from disk"""

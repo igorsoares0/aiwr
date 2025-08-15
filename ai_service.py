@@ -60,7 +60,13 @@ Title/Topic: "{title}"
 """
         
         if document_context:
-            prompt += f"Reference Context (from uploaded documents):\n{document_context[:1000]}...\n\n"
+            # Use much more context - up to 8000 characters instead of 1000
+            context_limit = 8000
+            if len(document_context) > context_limit:
+                truncated_context = document_context[:context_limit] + "..."
+            else:
+                truncated_context = document_context
+            prompt += f"Reference Context (from uploaded documents):\n{truncated_context}\n\n"
         
         prompt += f"""Current Text:
 {current_text}
