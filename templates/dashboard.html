@@ -812,8 +812,11 @@
         const suggestionElements = clonedEditor.querySelectorAll('.ai-suggestion');
         suggestionElements.forEach(el => el.remove());
         
-        // Get clean text content
-        return clonedEditor.textContent || clonedEditor.innerText || '';
+        // Get text content preserving line breaks
+        // Since we're using white-space: pre-wrap, textContent should preserve \n characters
+        const textContent = clonedEditor.textContent || clonedEditor.innerText || '';
+        console.log('Saving text with line breaks:', JSON.stringify(textContent));
+        return textContent;
     }
 
     // Auto-save current text
@@ -933,7 +936,16 @@
                 document.getElementById('title-input').value = result.text.title;
                 const editorElement = document.getElementById('editor');
                 editorElement.innerHTML = ''; // Clear editor first
-                editorElement.textContent = result.text.content || ''; // Set as plain text
+                
+                // Load content preserving line breaks
+                const content = result.text.content || '';
+                if (content) {
+                    // Use textContent to preserve \n characters as actual line breaks
+                    editorElement.textContent = content;
+                    console.log('Loaded content with line breaks:', content);
+                } else {
+                    editorElement.textContent = '';
+                }
                 
                 // Auto-resize editor after loading content
                 setTimeout(autoResizeEditor, 10);

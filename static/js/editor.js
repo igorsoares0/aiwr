@@ -18,6 +18,8 @@ class ModernAIEditor {
         this.currentSuggestion = null;
         this.suggestionElement = null;
         this.originalRange = null;
+        this.lastEnterTime = 0;
+        this.enterPressCount = 0;
         
         this.init();
     }
@@ -89,6 +91,31 @@ class ModernAIEditor {
     }
     
     handleKeyDown(event) {
+        // Handle Enter key for paragraph creation
+        if (event.key === 'Enter') {
+            const now = Date.now();
+            
+            // If Enter was pressed within 500ms of the last Enter press
+            if (now - this.lastEnterTime < 500) {
+                this.enterPressCount++;
+                
+                // Double Enter detected - create new paragraph
+                if (this.enterPressCount >= 2) {
+                    event.preventDefault();
+                    this.createNewParagraph();
+                    this.resetEnterTracking();
+                    return;
+                }
+            } else {
+                this.enterPressCount = 1;
+            }
+            
+            this.lastEnterTime = now;
+        } else {
+            // Reset Enter tracking if any other key is pressed
+            this.resetEnterTracking();
+        }
+        
         // Handle suggestion shortcuts
         if (this.currentSuggestion) {
             if (event.key === 'Tab') {
@@ -107,6 +134,44 @@ class ModernAIEditor {
                 return;
             }
         }
+    }
+    
+    resetEnterTracking() {
+        this.lastEnterTime = 0;
+        this.enterPressCount = 0;
+    }
+    
+    createNewParagraph() {
+        // Clear any current suggestion
+        this.clearSuggestion();
+        
+        // Get current selection
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return;
+        
+        const range = selection.getRangeAt(0);
+        
+        // Create two line breaks to create a paragraph separation
+        const lineBreak1 = document.createTextNode('\n');
+        const lineBreak2 = document.createTextNode('\n');
+        
+        // Insert the line breaks
+        range.insertNode(lineBreak2);
+        range.insertNode(lineBreak1);
+        
+        // Position cursor after the line breaks
+        range.setStartAfter(lineBreak2);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // Update stats and trigger auto-save
+        this.updateStats();
+        if (window.scheduleAutoSave) {
+            window.scheduleAutoSave();
+        }
+        
+        console.log('New paragraph created');
     }
     
     getTextContent() {
@@ -186,16 +251,26 @@ class ModernAIEditor {
             this.originalRange = selection.getRangeAt(0).cloneRange();
         }
         
-        // Clean the suggestion
+        // Clean the suggestion and respect paragraph structure
         const cleanedSuggestion = this.cleanSuggestion(suggestion);
         this.currentSuggestion = cleanedSuggestion;
         
         console.log('Showing suggestion:', cleanedSuggestion);
         
+        // Check if we should start a new paragraph based on current context
+        const shouldStartNewParagraph = this.shouldStartNewParagraph();
+        
         // Create suggestion element
         this.suggestionElement = document.createElement('span');
         this.suggestionElement.className = 'ai-suggestion';
-        this.suggestionElement.textContent = cleanedSuggestion;
+        
+        // If we should start a new paragraph, add line breaks before the suggestion
+        let suggestionText = cleanedSuggestion;
+        if (shouldStartNewParagraph) {
+            suggestionText = '\n\n' + cleanedSuggestion;
+        }
+        
+        this.suggestionElement.textContent = suggestionText;
         this.suggestionElement.spellcheck = false;
         this.suggestionElement.setAttribute('spellcheck', 'false');
         
@@ -212,8 +287,33 @@ class ModernAIEditor {
         this.suggestionControls.classList.remove('hidden');
     }
     
+    shouldStartNewParagraph() {
+        const text = this.getTextContent();
+        if (!text) return false;
+        
+        // Get the text around the cursor position
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return false;
+        
+        const range = selection.getRangeAt(0);
+        const beforeCursor = text.substring(0, range.startOffset);
+        
+        // Check if the last characters are sentence endings
+        const sentenceEndings = /[.!?]\s*$/;
+        const lastTwoChars = beforeCursor.slice(-2);
+        const lastChar = beforeCursor.slice(-1);
+        
+        // Start new paragraph if:
+        // 1. Text ends with sentence punctuation
+        // 2. There's already some substantial content (>50 chars)
+        // 3. Not already at start of a new paragraph
+        return sentenceEndings.test(beforeCursor.trim()) && 
+               beforeCursor.trim().length > 50 && 
+               !lastTwoChars.includes('\n\n');
+    }
+    
     cleanSuggestion(suggestion) {
-        const userText = this.getTextContent().replace(/\s+/g, ' ').trim();
+        const userText = this.getTextContent();
         const suggestionLower = suggestion.toLowerCase().trim();
         const userTextLower = userText.toLowerCase();
         
