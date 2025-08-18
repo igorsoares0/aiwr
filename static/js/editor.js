@@ -23,6 +23,12 @@ class ModernAIEditor {
     }
     
     init() {
+        // Force disable spellcheck on editor elements
+        this.editor.spellcheck = false;
+        this.editor.setAttribute('spellcheck', 'false');
+        this.titleInput.spellcheck = false;
+        this.titleInput.setAttribute('spellcheck', 'false');
+        
         // Add event listeners
         this.editor.addEventListener('input', (e) => this.handleTextInput(e));
         this.editor.addEventListener('keydown', (e) => this.handleKeyDown(e));
@@ -190,6 +196,8 @@ class ModernAIEditor {
         this.suggestionElement = document.createElement('span');
         this.suggestionElement.className = 'ai-suggestion';
         this.suggestionElement.textContent = cleanedSuggestion;
+        this.suggestionElement.spellcheck = false;
+        this.suggestionElement.setAttribute('spellcheck', 'false');
         
         // Insert suggestion at cursor position
         if (this.originalRange) {

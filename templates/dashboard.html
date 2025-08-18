@@ -198,7 +198,7 @@
             <!-- Title Input -->
             <div>
                 <div class="max-w-4xl mx-auto">
-                    <input type="text" id="title-input" placeholder="Untitled" class="w-full text-3xl font-semibold text-white bg-transparent border-none outline-none placeholder-gray-600" 
+                    <input type="text" id="title-input" placeholder="Untitled" spellcheck="false" class="w-full text-3xl font-semibold text-white bg-transparent border-none outline-none placeholder-gray-600" 
                            style="padding: 32px 24px 24px 24px; margin: 0; box-sizing: border-box; line-height: 1.2;" value="" />
                 </div>
             </div>
@@ -212,6 +212,7 @@
                             <div id="editor-container" class="relative">
                                 <div id="editor" 
                                      contenteditable="true" 
+                                     spellcheck="false"
                                      class="w-full min-h-96 bg-transparent border-none outline-none text-gray-300 resize-none"
                                      style="font-family: ui-serif, Georgia, Cambria, serif; font-size: 16px; line-height: 1.8; padding: 24px; margin: 0; box-sizing: border-box; overflow: visible;"
                                      data-placeholder="Start writing... AI suggestions will appear inline as you type.">
@@ -296,6 +297,19 @@
                                         padding-bottom: 100px; /* More space on mobile */
                                     }
                                 }
+                                
+                                /* Disable spellcheck globally */
+                                * {
+                                    -webkit-spellcheck: false !important;
+                                    -moz-spellcheck: false !important;
+                                    spellcheck: false !important;
+                                }
+                                
+                                input, textarea, [contenteditable] {
+                                    -webkit-spellcheck: false !important;
+                                    -moz-spellcheck: false !important;
+                                    spellcheck: false !important;
+                                }
                             </style>
                         </div>
                     </div>
@@ -362,13 +376,13 @@
                 <div class="p-6 flex-1 overflow-y-auto">
                     <div class="mb-4">
                         <label for="text-title" class="block text-sm font-medium text-gray-300 mb-2">Title</label>
-                        <input type="text" id="text-title" name="title" required
+                        <input type="text" id="text-title" name="title" required spellcheck="false"
                                class="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                placeholder="Enter text title...">
                     </div>
                     <div class="mb-4">
                         <label for="text-content" class="block text-sm font-medium text-gray-300 mb-2">Content</label>
-                        <textarea id="text-content" name="content" rows="15"
+                        <textarea id="text-content" name="content" rows="15" spellcheck="false"
                                   class="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                   placeholder="Write your text here..."></textarea>
                     </div>
@@ -438,7 +452,103 @@
         if (sidebarHidden) {
             document.getElementById('sidebar').classList.add('sidebar-hidden');
         }
+        
+        // Disable spellcheck globally on all elements
+        disableSpellcheckGlobally();
     });
+    
+    // Function to disable spellcheck on all elements
+    function disableSpellcheckGlobally() {
+        // Disable on all existing elements
+        const allElements = document.querySelectorAll('input, textarea, [contenteditable]');
+        allElements.forEach(element => {
+            element.spellcheck = false;
+            element.setAttribute('spellcheck', 'false');
+        });
+        
+        // Override createElement to automatically disable spellcheck
+        const originalCreateElement = document.createElement;
+        document.createElement = function(tagName, options) {
+            const element = originalCreateElement.call(this, tagName, options);
+            if (tagName.toLowerCase() === 'input' || tagName.toLowerCase() === 'textarea') {
+                element.spellcheck = false;
+                element.setAttribute('spellcheck', 'false');
+            }
+            return element;
+        };
+        
+        // Override setAttribute to prevent spellcheck from being set to true
+        const originalSetAttribute = Element.prototype.setAttribute;
+        Element.prototype.setAttribute = function(name, value) {
+            if (name.toLowerCase() === 'contenteditable' && value !== 'false') {
+                // When setting contenteditable, also set spellcheck to false
+                originalSetAttribute.call(this, 'spellcheck', 'false');
+                this.spellcheck = false;
+            }
+            if (name.toLowerCase() === 'spellcheck' && value !== 'false') {
+                // Force spellcheck to always be false
+                value = 'false';
+            }
+            return originalSetAttribute.call(this, name, value);
+        };
+        
+        // Observe for dynamically added elements
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) { // Element node
+                        // Check if the added node is a text input element
+                        if (node.matches && node.matches('input, textarea, [contenteditable]')) {
+                            node.spellcheck = false;
+                            node.setAttribute('spellcheck', 'false');
+                            // Additional force for contenteditable
+                            if (node.contentEditable && node.contentEditable !== 'false') {
+                                node.spellcheck = false;
+                                originalSetAttribute.call(node, 'spellcheck', 'false');
+                            }
+                        }
+                        // Check for text input elements within the added node
+                        const textInputs = node.querySelectorAll ? node.querySelectorAll('input, textarea, [contenteditable]') : [];
+                        textInputs.forEach(input => {
+                            input.spellcheck = false;
+                            input.setAttribute('spellcheck', 'false');
+                            // Additional force for contenteditable
+                            if (input.contentEditable && input.contentEditable !== 'false') {
+                                input.spellcheck = false;
+                                originalSetAttribute.call(input, 'spellcheck', 'false');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+        
+        // Start observing
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
+        // Add event listeners to disable spellcheck on focus
+        document.addEventListener('focusin', function(event) {
+            const target = event.target;
+            if (target.matches && target.matches('input, textarea, [contenteditable]')) {
+                target.spellcheck = false;
+                target.setAttribute('spellcheck', 'false');
+            }
+        });
+        
+        // Force disable on all existing elements every 500ms as a safety net
+        setInterval(function() {
+            const allElements = document.querySelectorAll('input, textarea, [contenteditable]');
+            allElements.forEach(element => {
+                if (element.spellcheck !== false) {
+                    element.spellcheck = false;
+                    element.setAttribute('spellcheck', 'false');
+                }
+            });
+        }, 500);
+    }
 
     // Document upload function
     async function uploadDocument() {
