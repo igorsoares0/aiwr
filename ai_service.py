@@ -1,6 +1,9 @@
 import os
 import anthropic
 from typing import List, Dict, Optional
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class AIWritingAssistant:
     def __init__(self):
