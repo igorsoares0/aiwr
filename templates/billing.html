@@ -185,6 +185,25 @@
             </div>
         </div>
 
+        <!-- Danger Zone -->
+        {% if not current_user.is_subscription_active and current_user.subscription_status not in ['active', 'past_due'] %}
+        <div class="bg-red-900/20 rounded-lg border border-red-800 p-6 mb-8">
+            <h3 class="text-lg font-semibold text-red-300 mb-4">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                Danger Zone
+            </h3>
+            <p class="text-gray-300 mb-4">
+                Permanently delete your account and all associated data. This action cannot be undone.
+            </p>
+            <button onclick="deleteAccount()" 
+                    class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                Delete Account
+            </button>
+        </div>
+        {% endif %}
+
         <!-- Support Section -->
         <div class="bg-gray-900/30 rounded-lg border border-gray-700 p-6">
             <h3 class="text-lg font-semibold text-white mb-4">Need Help?</h3>
@@ -275,6 +294,38 @@
         } catch (error) {
             console.error('Error:', error);
             alert('Error reactivating subscription. Please try again.');
+        }
+    }
+
+    async function deleteAccount() {
+        if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently delete all your data, texts, and documents.')) {
+            return;
+        }
+        
+        if (!confirm('This is your final warning. Your account and all data will be permanently deleted. Are you sure?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/account/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Your account has been successfully deleted.');
+                window.location.href = '/';
+            } else {
+                alert('Error deleting account: ' + (result.error || 'Unknown error'));
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error deleting account. Please try again.');
         }
     }
 </script>

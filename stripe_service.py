@@ -243,6 +243,22 @@ class StripeService:
             current_app.logger.error(f"Error handling payment failure: {str(e)}")
             db.session.rollback()
     
+    def delete_customer(self, customer_id):
+        """Delete a Stripe customer and cancel all subscriptions"""
+        try:
+            # First, cancel all active subscriptions
+            subscriptions = stripe.Subscription.list(customer=customer_id, status='active')
+            for subscription in subscriptions:
+                stripe.Subscription.delete(subscription.id)
+            
+            # Delete the customer
+            stripe.Customer.delete(customer_id)
+            current_app.logger.info(f"Successfully deleted Stripe customer: {customer_id}")
+            
+        except stripe.error.StripeError as e:
+            current_app.logger.error(f"Failed to delete Stripe customer {customer_id}: {str(e)}")
+            raise Exception(f"Failed to delete customer: {str(e)}")
+    
     def construct_event(self, payload, sig_header):
         """Construct and verify webhook event"""
         webhook_secret = os.getenv('STRIPE_WEBHOOK_SECRET')

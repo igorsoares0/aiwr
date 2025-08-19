@@ -140,6 +140,50 @@ def subscription_status():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@billing_bp.route('/api/account/delete', methods=['POST'])
+@login_required
+def delete_account():
+    """Delete user account if they don't have an active paid subscription"""
+    try:
+        # Check if user has an active paid subscription
+        current_subscription = current_user.get_current_subscription()
+        if current_subscription and current_subscription.is_active:
+            return jsonify({
+                'error': 'Cannot delete account while you have an active subscription. Please cancel your subscription first.'
+            }), 400
+        
+        # Check if user has any active subscription status that prevents deletion
+        if current_user.subscription_status in ['active', 'past_due']:
+            return jsonify({
+                'error': 'Cannot delete account while you have an active subscription. Please cancel your subscription first.'
+            }), 400
+        
+        # If user has a Stripe customer ID, we should also cancel any pending subscriptions
+        if current_user.stripe_customer_id:
+            try:
+                # Cancel any pending subscriptions via Stripe
+                stripe_service.delete_customer(current_user.stripe_customer_id)
+            except Exception as stripe_error:
+                current_app.logger.warning(f"Error deleting Stripe customer: {str(stripe_error)}")
+        
+        # Store user email for logging before deletion
+        user_email = current_user.email
+        user_id = current_user.id
+        
+        # Delete user account (cascade will handle related records)
+        db.session.delete(current_user)
+        db.session.commit()
+        
+        # Log the account deletion
+        current_app.logger.info(f"Account deleted for user {user_email} (ID: {user_id})")
+        
+        return jsonify({'success': True, 'message': 'Account successfully deleted'})
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting account: {str(e)}")
+        return jsonify({'error': 'Failed to delete account. Please try again.'}), 500
+
 @billing_bp.route('/success')
 @login_required
 def success():
