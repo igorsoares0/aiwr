@@ -85,7 +85,10 @@ def upload_document():
             file_type=result['file_type'],
             file_size=result['file_size'],
             content_text=result['extracted_text'],
-            upload_path=result['file_path']
+            upload_path=result.get('file_path'),  # May be None for Cloudinary uploads
+            cloudinary_public_id=result.get('cloudinary_public_id'),
+            cloudinary_url=result.get('cloudinary_url'),
+            cloudinary_secure_url=result.get('cloudinary_secure_url')
         )
         
         db.session.add(document)
@@ -118,8 +121,8 @@ def delete_document(document_id):
         if not document:
             return jsonify({'error': 'Document not found'}), 404
         
-        # Delete file from disk
-        document_processor.delete_file(document.upload_path)
+        # Delete file from Cloudinary or disk
+        document_processor.delete_file(document)
         
         # Delete from database
         db.session.delete(document)

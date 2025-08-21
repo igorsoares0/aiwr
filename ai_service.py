@@ -63,21 +63,23 @@ Title/Topic: "{title}"
 """
         
         if document_context:
-            # Use much more context - up to 8000 characters instead of 1000
-            context_limit = 8000
+            # Use enhanced context - up to 5000 characters optimized for better AI suggestions
+            context_limit = 5000
             if len(document_context) > context_limit:
                 truncated_context = document_context[:context_limit] + "..."
             else:
                 truncated_context = document_context
-            prompt += f"Reference Context (from uploaded documents):\n{truncated_context}\n\n"
+            prompt += f"Reference Context (from uploaded documents - USE THIS INFORMATION):\n{truncated_context}\n\n"
         
         prompt += f"""Current Text:
 {current_text}
 
-Please provide 3 helpful writing suggestions. Each suggestion should be one of these types:
-1. CONTINUATION - How to continue writing the next sentence/paragraph
-2. IMPROVEMENT - How to improve existing text
-3. STRUCTURE - Suggestions about organization or flow
+Please provide 3 helpful writing suggestions based on the reference context above. Each suggestion should be one of these types:
+1. CONTINUATION - How to continue writing the next sentence/paragraph using information from the documents
+2. IMPROVEMENT - How to improve existing text by incorporating relevant details from the reference context
+3. STRUCTURE - Suggestions about organization or flow that align with the document structure
+
+IMPORTANT: Prioritize using specific information, facts, or insights from the Reference Context when making suggestions. Reference the documents when relevant.
 
 Format your response as:
 1. [TYPE]: Suggestion text here

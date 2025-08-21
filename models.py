@@ -149,8 +149,26 @@ class Document(db.Model):
     file_type = db.Column(db.String(10), nullable=False)  # 'pdf' or 'docx'
     file_size = db.Column(db.Integer, nullable=False)
     content_text = db.Column(db.Text, nullable=True)  # Extracted text content
-    upload_path = db.Column(db.String(500), nullable=False)
+    upload_path = db.Column(db.String(500), nullable=True)  # Local path for backward compatibility
+    
+    # Cloudinary fields
+    cloudinary_public_id = db.Column(db.String(255), nullable=True)
+    cloudinary_url = db.Column(db.String(500), nullable=True)
+    cloudinary_secure_url = db.Column(db.String(500), nullable=True)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @property
+    def is_cloudinary_stored(self):
+        """Check if document is stored in Cloudinary"""
+        return bool(self.cloudinary_public_id and self.cloudinary_secure_url)
+    
+    @property
+    def file_url(self):
+        """Get file URL - prefer Cloudinary secure URL"""
+        if self.is_cloudinary_stored:
+            return self.cloudinary_secure_url
+        return self.upload_path  # Fallback to local path
     
     def __repr__(self):
         return f'<Document {self.original_filename}>'
