@@ -568,11 +568,17 @@
                 body: formData
             });
             
+            if (!response.ok) {
+                const errorText = await response.text();
+                alert(`Upload failed (${response.status}). Please try again.`);
+                return;
+            }
+            
             const result = await response.json();
             
             if (result.success) {
-                // Document uploaded successfully - could add to sidebar dynamically here if needed
-                console.log('Document uploaded successfully');
+                // Add document to sidebar dynamically
+                addDocumentToSidebar(result.document);
             } else {
                 alert(result.error || 'Upload failed');
             }
@@ -754,6 +760,35 @@
     
     // Sync with global window variable for editor access
     window.currentActiveTextId = null; // Flag to prevent auto-save during text loading
+
+    // Add document to sidebar dynamically
+    function addDocumentToSidebar(doc) {
+        const documentsList = document.getElementById('documents-list');
+        
+        const documentElement = document.createElement('div');
+        documentElement.className = 'flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-900 rounded-lg cursor-pointer transition-colors group';
+        documentElement.setAttribute('data-document-id', doc.id);
+        
+        documentElement.innerHTML = `
+            <div class="flex items-center flex-1 min-w-0">
+                <svg class="mr-3 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-white truncate">${doc.filename}</div>
+                    <div class="text-xs text-gray-500">${doc.file_type.toUpperCase()} • ${Math.round(doc.file_size / 1024)}KB</div>
+                </div>
+            </div>
+            <button onclick="deleteDocument(${doc.id})" class="ml-2 text-gray-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+            </button>
+        `;
+        
+        // Add to the top of the list (most recent first)
+        documentsList.insertBefore(documentElement, documentsList.firstChild);
+    }
 
     // Add text to sidebar dynamically
     function addTextToSidebar(text) {
