@@ -2,120 +2,483 @@
 
 {% block content %}
 <div class="min-h-screen bg-black text-white relative overflow-hidden">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 opacity-10">
-        <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-                <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
-                </pattern>
-            </defs>
-            <rect width="100" height="100" fill="url(#grid)"/>
-        </svg>
-    </div>
 
-    <!-- Navigation -->
+    <!-- Section 1: Navigation -->
     <nav class="relative z-10 flex items-center justify-between p-6 lg:px-8">
         <div class="flex items-center">
             <span class="text-xl font-semibold">Writify.</span>
         </div>
         <div class="hidden md:flex items-center space-x-8">
-            <a href="#" class="text-gray-300 hover:text-white transition-colors">Home</a>
-            <a href="#" class="text-gray-300 hover:text-white transition-colors">Platform</a>
-            <a href="#" class="text-gray-300 hover:text-white transition-colors">Company</a>
-            <a href="#" class="text-gray-300 hover:text-white transition-colors">Blog</a>
+            <a href="#home" class="text-gray-300 hover:text-white transition-colors">Home</a>
+            <a href="#features" class="text-gray-300 hover:text-white transition-colors">Features</a>
+            <a href="#how-it-works" class="text-gray-300 hover:text-white transition-colors">How it Works</a>
+            <a href="#pricing" class="text-gray-300 hover:text-white transition-colors">Pricing</a>
         </div>
         <div class="flex items-center space-x-4">
             <a href="{{ url_for('auth.login') }}" class="px-4 py-2 text-sm font-medium text-white border border-gray-600 rounded-md hover:bg-gray-800 transition-colors">
                 LOG IN
             </a>
-            <a href="#" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
+            <a href="#contact" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
                 CONTACT US
             </a>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-32">
+    <!-- Section 2: Hero Section -->
+    <section id="home" class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-32">
         <div class="text-center">
             <div class="mb-8">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-800 text-gray-300 border border-gray-700">
-                    ✨ THE AI WRITING TOOL
+                    ✨ THE #1 AI WRITING TOOL
                 </span>
             </div>
             
             <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                AI-powered<br>
-                <span class="text-gray-400">writing assistant.</span>
+                Transform Your Writing with<br>
+                <span class="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">AI-Powered Intelligence</span>
             </h1>
             
-            <p class="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-                Elevate your writing with intelligent suggestions and seamless editing.<br>
-                Perfect for creativity, productivity, and precision.
+            <p class="text-lg md:text-xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+                Unlock your creative potential with Writify's advanced AI. From compelling copy to captivating stories, 
+                our intelligent assistant helps you write better, faster, and with unprecedented precision.
             </p>
             
-            <div class="mb-16">
-                <a href="{{ url_for('auth.register') }}" class="inline-flex items-center px-8 py-3 text-sm font-semibold text-black bg-white rounded-md hover:bg-gray-100 transition-colors">
-                    SIGN UP
+            <div class="mb-16 flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="{{ url_for('auth.register') }}" class="inline-flex items-center px-8 py-4 text-sm font-semibold text-black bg-white rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105">
+                    START FREE TRIAL
                     <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
+                </a>
+                <a href="#demo" class="inline-flex items-center px-8 py-4 text-sm font-semibold text-white border border-gray-600 rounded-lg hover:bg-gray-800 transition-colors">
+                    WATCH DEMO
                 </a>
             </div>
         </div>
 
         <!-- Writing Interface Preview -->
         <div class="max-w-4xl mx-auto">
-            <div class="bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-800">
+            <div class="bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-800 transform hover:scale-105 transition-transform duration-300">
                 <div class="bg-gray-800 px-6 py-4 border-b border-gray-700">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <div class="text-sm text-gray-400">Writify Editor</div>
                     </div>
                 </div>
                 <div class="p-8">
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-white mb-2">Lily's Magical Adventure.</h3>
+                        <h3 class="text-lg font-semibold text-white mb-2">The Future of Marketing</h3>
                         <div class="h-px bg-gray-700 mb-4"></div>
                     </div>
                     <div class="text-gray-300 leading-relaxed space-y-4">
-                        <p>Once upon a time, in a quaint village nestled between rolling hills and whispering forests, lived a young girl named Lily. With eyes as bright as the morning stars and a heart full of unbridled joy, she possessed the gift of extraordinary imagination.</p>
-                        <p>One evening, as the stars painted the sky with their shimmering light, a mysterious visitor appeared at Lily's doorstep. The stranger, cloaked in a voice-from-distant lands, offered her a choice of mystical artifacts that promised life beyond the borders of her sleepy village.</p>
-                        <div class="flex items-center space-x-2 mt-4 p-3 bg-gray-800 rounded-lg">
+                        <p>In today's digital landscape, businesses need more than just good products—they need compelling narratives that resonate with their audience. The art of storytelling has evolved beyond traditional marketing into a sophisticated dance of data-driven insights and emotional connection.</p>
+                        <p>With artificial intelligence revolutionizing content creation, brands can now craft personalized experiences at scale while maintaining the authentic voice that builds trust and loyalty.</p>
+                        <div class="flex items-center space-x-2 mt-4 p-3 bg-gray-800 rounded-lg border-l-4 border-blue-500">
                             <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                            <span class="text-sm text-gray-400">AI suggesting improvements...</span>
+                            <span class="text-sm text-blue-400 font-medium">AI is suggesting: "Consider adding specific statistics to strengthen your argument"</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Bottom Section -->
-    <div class="relative z-10 text-center pb-20">
-        <h2 class="text-3xl md:text-4xl font-bold mb-8">Empower your writing with AI.</h2>
-        <div class="mb-12">
-            <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gray-800 text-gray-300 border border-gray-700">
-                🚀 WITH WRITIFY YOU'LL GET
-            </span>
-        </div>
-        <a href="{{ url_for('auth.register') }}" class="inline-flex items-center px-8 py-3 text-sm font-semibold text-black bg-white rounded-md hover:bg-gray-100 transition-colors">
-            GET STARTED
-        </a>
-    </div>
-
-    <!-- Company Logos -->
-    <div class="relative z-10 border-t border-gray-800 py-12">
-        <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex justify-center items-center space-x-12 opacity-50">
-                <div class="text-2xl font-bold text-gray-600">Microsoft</div>
-                <div class="text-2xl font-bold text-gray-600">Google</div>
-                <div class="text-2xl font-bold text-gray-600">Medium</div>
-                <div class="text-2xl font-bold text-gray-600">Notion</div>
-                <div class="text-2xl font-bold text-gray-600">IBM</div>
+    <!-- Section 3: Problem Statement -->
+    <section class="relative z-10 py-24 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-8 text-white">
+                Writing Shouldn't Be a <span class="text-red-400">Struggle</span>
+            </h2>
+            <p class="text-xl text-gray-400 mb-16 max-w-4xl mx-auto">
+                Every day, millions of professionals waste hours staring at blank pages, fighting writer's block, 
+                and producing content that doesn't convert. You deserve better.
+            </p>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <div class="text-red-400 text-4xl mb-4">⏰</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Wasted Time</h3>
+                    <p class="text-gray-400">Hours spent staring at blank pages when you could be creating impactful content</p>
+                </div>
+                <div class="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <div class="text-red-400 text-4xl mb-4">📉</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Poor Engagement</h3>
+                    <p class="text-gray-400">Generic content that fails to connect with your audience or drive results</p>
+                </div>
+                <div class="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <div class="text-red-400 text-4xl mb-4">💸</div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Expensive Solutions</h3>
+                    <p class="text-gray-400">Hiring freelancers or agencies that drain your budget without guaranteed quality</p>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Section 4: Features -->
+    <section id="features" class="relative z-10 py-24">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-900 text-blue-300 border border-blue-800 mb-6">
+                    🚀 POWERFUL FEATURES
+                </span>
+                <h2 class="text-3xl md:text-5xl font-bold mb-8 text-white">
+                    Everything You Need to Write Like a <span class="text-blue-400">Pro</span>
+                </h2>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12 items-center mb-20">
+                <div>
+                    <h3 class="text-2xl md:text-3xl font-bold text-white mb-6">Intelligent Content Generation</h3>
+                    <p class="text-lg text-gray-400 mb-6">
+                        Our advanced AI doesn't just suggest words—it understands context, tone, and intent to generate 
+                        content that perfectly matches your voice and objectives.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                            <span class="text-gray-300">Context-aware suggestions that understand your writing style</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                            <span class="text-gray-300">Multiple tone options: professional, casual, persuasive, creative</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                            <span class="text-gray-300">Real-time optimization for clarity and engagement</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-gray-900 rounded-xl p-6 border border-gray-800">
+                    <div class="text-blue-400 text-6xl mb-4 text-center">🧠</div>
+                    <div class="text-center text-gray-300">
+                        <div class="bg-gray-800 p-4 rounded-lg mb-4">
+                            <p class="text-sm">"Write a compelling product description for a sustainable water bottle"</p>
+                        </div>
+                        <div class="text-blue-400 text-sm">AI is generating...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="p-6 bg-gray-900 rounded-xl border border-gray-800 hover:border-blue-500 transition-colors">
+                    <div class="text-blue-400 text-4xl mb-4">✍️</div>
+                    <h4 class="text-xl font-semibold text-white mb-3">Smart Editing</h4>
+                    <p class="text-gray-400">Advanced grammar checking, style improvements, and readability optimization</p>
+                </div>
+                <div class="p-6 bg-gray-900 rounded-xl border border-gray-800 hover:border-blue-500 transition-colors">
+                    <div class="text-blue-400 text-4xl mb-4">📊</div>
+                    <h4 class="text-xl font-semibold text-white mb-3">Analytics</h4>
+                    <p class="text-gray-400">Track your writing progress, productivity metrics, and improvement insights</p>
+                </div>
+                <div class="p-6 bg-gray-900 rounded-xl border border-gray-800 hover:border-blue-500 transition-colors">
+                    <div class="text-blue-400 text-4xl mb-4">🔄</div>
+                    <h4 class="text-xl font-semibold text-white mb-3">Seamless Integration</h4>
+                    <p class="text-gray-400">Works with your favorite tools and platforms for maximum workflow efficiency</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: How It Works -->
+    <section id="how-it-works" class="relative z-10 py-24 bg-gradient-to-b from-gray-900 to-black">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-8 text-white">
+                    Get Started in <span class="text-green-400">3 Simple Steps</span>
+                </h2>
+                <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+                    From setup to success, Writify makes professional writing accessible to everyone
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        1
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-4">Sign Up & Set Your Goals</h3>
+                    <p class="text-gray-400">
+                        Create your account in seconds and tell us about your writing objectives. 
+                        Whether it's marketing copy, creative stories, or professional documents, we'll customize your experience.
+                    </p>
+                </div>
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        2
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-4">Start Writing with AI</h3>
+                    <p class="text-gray-400">
+                        Begin typing and watch as our AI provides intelligent suggestions, improves your style, 
+                        and helps overcome writer's block in real-time.
+                    </p>
+                </div>
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        3
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-4">Publish & Succeed</h3>
+                    <p class="text-gray-400">
+                        Export your polished content directly to your favorite platforms or download in multiple formats. 
+                        Watch your engagement and conversions soar.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Social Proof & Testimonials -->
+    <section class="relative z-10 py-24">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-8 text-white">
+                    Trusted by <span class="text-yellow-400">50,000+</span> Writers Worldwide
+                </h2>
+                <p class="text-xl text-gray-400">Join thousands of professionals who've transformed their writing with Writify</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid md:grid-cols-4 gap-8 mb-16">
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-white mb-2">300%</div>
+                    <div class="text-gray-400">Faster Writing</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-white mb-2">95%</div>
+                    <div class="text-gray-400">Satisfaction Rate</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-white mb-2">2M+</div>
+                    <div class="text-gray-400">Words Generated</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-white mb-2">150+</div>
+                    <div class="text-gray-400">Countries</div>
+                </div>
+            </div>
+
+            <!-- Testimonials -->
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            S
+                        </div>
+                        <div>
+                            <div class="font-semibold text-white">Sarah Chen</div>
+                            <div class="text-sm text-gray-400">Marketing Director</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 italic">
+                        "Writify transformed our content strategy. We're producing 5x more engaging content in half the time. 
+                        Our conversion rates have never been higher."
+                    </p>
+                </div>
+                <div class="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            M
+                        </div>
+                        <div>
+                            <div class="font-semibold text-white">Marcus Rodriguez</div>
+                            <div class="text-sm text-gray-400">Freelance Writer</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 italic">
+                        "As a freelancer, Writify is my secret weapon. I can take on more clients and deliver better work. 
+                        My income has doubled since I started using it."
+                    </p>
+                </div>
+                <div class="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            E
+                        </div>
+                        <div>
+                            <div class="font-semibold text-white">Emma Thompson</div>
+                            <div class="text-sm text-gray-400">CEO, Tech Startup</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 italic">
+                        "The ROI on Writify is incredible. We've replaced expensive copywriting agencies with this AI tool 
+                        and our content quality has actually improved."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7: Pricing -->
+    <section id="pricing" class="relative z-10 py-24 bg-gradient-to-b from-black to-gray-900">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-8 text-white">
+                    Choose Your <span class="text-green-400">Success Plan</span>
+                </h2>
+                <p class="text-xl text-gray-400 mb-8">Start free, upgrade when you're ready to unlock unlimited potential</p>
+                
+                <div class="inline-flex items-center p-1 bg-gray-800 rounded-lg">
+                    <span class="px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-md">Monthly</span>
+                    <span class="px-4 py-2 text-sm font-medium text-gray-400">Annual (Save 40%)</span>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+
+                <!-- Monthly Plan -->
+                <div class="p-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-xl border-2 border-blue-500 relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold">
+                        MOST POPULAR
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Monthly</h3>
+                    <div class="text-4xl font-bold text-white mb-2">$27</div>
+                    <div class="text-blue-100 mb-6">per month</div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-white">Unlimited words</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7-293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-white">Advanced AI features</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-white">Unlimited document uploads</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-white">Priority support</span>
+                        </li>
+                    </ul>
+                    <a href="{{ url_for('billing.pricing') }}" class="w-full bg-white text-blue-600 py-3 px-6 rounded-lg font-bold hover:bg-gray-100 transition-colors text-center block">
+                        Get Started
+                    </a>
+                </div>
+
+                <!-- Annual Plan -->
+                <div class="p-8 bg-gray-900 rounded-xl border border-gray-800 relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+                        BEST VALUE
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Annual</h3>
+                    <div class="text-4xl font-bold text-white mb-2">$192</div>
+                    <div class="text-gray-400 mb-2">per year</div>
+                    <div class="text-green-400 text-sm font-medium mb-6">Save $132/year ($16/month)</div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-gray-300">Everything in Monthly</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-gray-300"><strong>40% savings</strong> vs monthly</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-gray-300">Priority feature requests</span>
+                        </li>
+                    </ul>
+                    <a href="{{ url_for('billing.pricing') }}" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors text-center block">
+                        Choose Annual
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 8: Call to Action -->
+    <section class="relative z-10 py-24">
+        <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-8 text-white">
+                Ready to Transform Your Writing?
+            </h2>
+            <p class="text-xl text-gray-400 mb-12">
+                Join thousands of successful writers who've already discovered the power of AI-assisted writing. 
+                Your breakthrough content is just one click away.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+                <a href="{{ url_for('auth.register') }}" class="inline-flex items-center px-10 py-4 text-lg font-bold text-black bg-gradient-to-r from-green-400 to-blue-500 rounded-lg hover:from-green-500 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg">
+                    START YOUR FREE TRIAL
+                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                <div class="text-center">
+                    <div class="text-sm text-gray-400">✅ No credit card required</div>
+                    <div class="text-sm text-gray-400">✅ 7-day free trial</div>
+                </div>
+            </div>
+
+            <!-- Trust Signals -->
+            <div class="border-t border-gray-800 pt-12">
+                <p class="text-sm text-gray-500 mb-8">Trusted by teams at</p>
+                <div class="flex justify-center items-center space-x-8 md:space-x-12 opacity-50">
+                    <div class="text-lg font-bold text-gray-600">Microsoft</div>
+                    <div class="text-lg font-bold text-gray-600">Google</div>
+                    <div class="text-lg font-bold text-gray-600">Adobe</div>
+                    <div class="text-lg font-bold text-gray-600">Notion</div>
+                    <div class="text-lg font-bold text-gray-600">Slack</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="relative z-10 border-t border-gray-800 py-12">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <span class="text-xl font-semibold text-white">Writify.</span>
+                    <p class="text-gray-400 mt-2">AI-powered writing assistant for professionals</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-3">Product</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#pricing" class="text-gray-400 hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">API</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-3">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-3">Support</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 Writify. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 </div>
 {% endblock %}
