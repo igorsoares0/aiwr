@@ -33,9 +33,12 @@ def create_app():
             db.create_all()
             print("✅ Database tables created successfully!")
             
-            # Initialize with admin user
+            # Initialize with admin user in new session
             try:
                 print("👤 Creating admin user...")
+                # Start fresh session after table creation
+                db.session.commit()  # Commit table creation
+                
                 from models import User
                 from werkzeug.security import generate_password_hash
                 import datetime
@@ -59,7 +62,10 @@ def create_app():
                     print("ℹ️ Admin user already exists")
             except Exception as init_error:
                 print(f"⚠️ Could not create admin user: {init_error}")
-                db.session.rollback()
+                try:
+                    db.session.rollback()
+                except:
+                    pass
     
     # Initialize Flask-Login
     login_manager = LoginManager()
