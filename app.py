@@ -39,7 +39,6 @@ def create_app():
                 # Start fresh session after table creation
                 db.session.commit()  # Commit table creation
                 
-                from models import User
                 from werkzeug.security import generate_password_hash
                 import datetime
                 
