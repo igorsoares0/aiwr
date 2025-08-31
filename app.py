@@ -19,6 +19,48 @@ def create_app():
     db.init_app(app)
     mail.init_app(app)
     
+    # Create database tables on startup (for production deployment)
+    with app.app_context():
+        try:
+            print("🔍 Checking if database tables exist...")
+            # Try to query users table
+            from sqlalchemy import text
+            db.session.execute(text("SELECT 1 FROM users LIMIT 1")).fetchone()
+            print("✅ Database tables already exist")
+        except Exception as e:
+            print(f"⚠️ Tables missing: {str(e)}")
+            print("📊 Creating database tables...")
+            db.create_all()
+            print("✅ Database tables created successfully!")
+            
+            # Initialize with admin user
+            try:
+                print("👤 Creating admin user...")
+                from models import User
+                from werkzeug.security import generate_password_hash
+                import datetime
+                
+                admin_user = User.query.filter_by(email='admin@writify.com').first()
+                if not admin_user:
+                    admin_user = User(
+                        email='admin@writify.com',
+                        password_hash=generate_password_hash('admin123456'),
+                        first_name='Admin',
+                        last_name='User',
+                        is_active=True,
+                        email_verified=True,
+                        subscription_status='trial',
+                        trial_ends_at=datetime.datetime.utcnow() + datetime.timedelta(days=7)
+                    )
+                    db.session.add(admin_user)
+                    db.session.commit()
+                    print("✅ Admin user created: admin@writify.com / admin123456")
+                else:
+                    print("ℹ️ Admin user already exists")
+            except Exception as init_error:
+                print(f"⚠️ Could not create admin user: {init_error}")
+                db.session.rollback()
+    
     # Initialize Flask-Login
     login_manager = LoginManager()
     login_manager.init_app(app)
