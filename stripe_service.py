@@ -7,12 +7,21 @@ from models import db, User, Subscription, PaymentEvent
 class StripeService:
     def __init__(self):
         self.stripe_key = os.getenv('STRIPE_SECRET_KEY')
+        print(f"🔧 StripeService init - API key exists: {self.stripe_key is not None}")
+        print(f"🔧 StripeService init - API key starts with: {self.stripe_key[:10] if self.stripe_key else 'None'}...")
+        
         if self.stripe_key:
             stripe.api_key = self.stripe_key
+            print(f"🔧 StripeService init - Stripe API key set successfully")
+        else:
+            print(f"❌ StripeService init - No Stripe API key found!")
         
         # Price IDs - these should be configured in Stripe Dashboard
         self.MONTHLY_PRICE_ID = os.getenv('STRIPE_MONTHLY_PRICE_ID', 'price_monthly_27')
         self.ANNUAL_PRICE_ID = os.getenv('STRIPE_ANNUAL_PRICE_ID', 'price_annual_192')
+        
+        print(f"🔧 StripeService init - Monthly price ID: {self.MONTHLY_PRICE_ID}")
+        print(f"🔧 StripeService init - Annual price ID: {self.ANNUAL_PRICE_ID}")
         
     def create_customer(self, user):
         """Create a Stripe customer for the user"""
@@ -38,12 +47,20 @@ class StripeService:
     def create_checkout_session(self, user, plan_type):
         """Create a Stripe Checkout session"""
         try:
+            current_app.logger.info(f"🔧 Creating checkout session for user {user.id}, plan: {plan_type}")
+            current_app.logger.info(f"🔧 Stripe API key set: {stripe.api_key is not None}")
+            current_app.logger.info(f"🔧 Monthly price ID: {self.MONTHLY_PRICE_ID}")
+            current_app.logger.info(f"🔧 Annual price ID: {self.ANNUAL_PRICE_ID}")
+            
             # Ensure user has a Stripe customer ID
             if not user.stripe_customer_id:
+                current_app.logger.info(f"🔧 User has no Stripe customer ID, creating one...")
                 self.create_customer(user)
+                current_app.logger.info(f"🔧 Created customer ID: {user.stripe_customer_id}")
             
             # Determine price ID based on plan
             price_id = self.MONTHLY_PRICE_ID if plan_type == 'monthly' else self.ANNUAL_PRICE_ID
+            current_app.logger.info(f"🔧 Using price ID: {price_id}")
             
             # Prepare subscription data
             subscription_data = {
@@ -54,6 +71,7 @@ class StripeService:
             }
             
             # Trial is handled locally, Stripe subscription starts immediately
+            current_app.logger.info(f"🔧 About to create Stripe checkout session...")
             
             # Create checkout session
             session = stripe.checkout.Session.create(
@@ -73,10 +91,18 @@ class StripeService:
                 subscription_data=subscription_data
             )
             
+            current_app.logger.info(f"🔧 ✅ Checkout session created successfully: {session.id}")
             return session
             
         except stripe.error.StripeError as e:
-            current_app.logger.error(f"Failed to create checkout session: {str(e)}")
+            current_app.logger.error(f"❌ Stripe error: {str(e)}")
+            current_app.logger.error(f"❌ Error type: {type(e)}")
+            raise Exception(f"Failed to create checkout session: {str(e)}")
+        except Exception as e:
+            current_app.logger.error(f"❌ General error: {str(e)}")
+            current_app.logger.error(f"❌ Error type: {type(e)}")
+            import traceback
+            current_app.logger.error(f"❌ Traceback: {traceback.format_exc()}")
             raise Exception(f"Failed to create checkout session: {str(e)}")
     
     def create_billing_portal_session(self, user):
