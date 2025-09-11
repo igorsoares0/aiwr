@@ -193,12 +193,14 @@ def success():
     if session_id:
         try:
             # Retrieve the session to get details
-            import stripe
-            session = stripe.checkout.Session.retrieve(session_id)
+            session = stripe_service.get_checkout_session(session_id)
             
-            return render_template('billing_success.html', 
-                                 session=session,
-                                 plan_type=session.metadata.get('plan_type', 'monthly'))
+            if session:
+                return render_template('billing_success.html', 
+                                     session=session,
+                                     plan_type=session.metadata.get('plan_type', 'monthly'))
+            else:
+                flash('There was an issue retrieving your payment information.', 'warning')
         except Exception as e:
             flash('There was an issue retrieving your payment information.', 'warning')
     
