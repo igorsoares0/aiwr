@@ -1,4 +1,5 @@
 import os
+import stripe
 from datetime import datetime, timedelta
 from flask import current_app, url_for
 from models import db, User, Subscription, PaymentEvent
@@ -9,6 +10,11 @@ class StripeService:
         print(f"🔧 StripeService init - API key exists: {self.stripe_key is not None}")
         print(f"🔧 StripeService init - API key starts with: {self.stripe_key[:10] if self.stripe_key else 'None'}...")
         
+        # Initialize Stripe API key if available
+        if self.stripe_key:
+            stripe.api_key = self.stripe_key
+            print(f"🔧 Stripe API key set successfully")
+        
         # Price IDs - these should be configured in Stripe Dashboard
         self.MONTHLY_PRICE_ID = os.getenv('STRIPE_MONTHLY_PRICE_ID', 'price_monthly_27')
         self.ANNUAL_PRICE_ID = os.getenv('STRIPE_ANNUAL_PRICE_ID', 'price_annual_192')
@@ -16,25 +22,17 @@ class StripeService:
         print(f"🔧 StripeService init - Monthly price ID: {self.MONTHLY_PRICE_ID}")
         print(f"🔧 StripeService init - Annual price ID: {self.ANNUAL_PRICE_ID}")
     
-    def _init_stripe(self):
-        """Initialize Stripe module with API key"""
-        try:
-            import stripe
-            if self.stripe_key:
-                stripe.api_key = self.stripe_key
-                print(f"🔧 Stripe API key set successfully")
-                return stripe
-            else:
-                print(f"❌ No Stripe API key found!")
-                raise Exception("Stripe API key not configured")
-        except Exception as e:
-            print(f"❌ Error initializing Stripe: {str(e)}")
-            raise
+    def _ensure_stripe_configured(self):
+        """Ensure Stripe is properly configured"""
+        if not self.stripe_key:
+            raise Exception("Stripe API key not configured")
+        if not stripe.api_key:
+            stripe.api_key = self.stripe_key
         
     def create_customer(self, user):
         """Create a Stripe customer for the user"""
         try:
-            stripe = self._init_stripe()
+            self._ensure_stripe_configured()
             customer = stripe.Customer.create(
                 email=user.email,
                 name=user.full_name,
@@ -50,22 +48,16 @@ class StripeService:
             return customer
             
         except Exception as e:
-            if 'stripe.error' in str(type(e)):
-                current_app.logger.error(f"Failed to create Stripe customer: {str(e)}")
-                raise Exception(f"Failed to create customer: {str(e)}")
-            else:
-                current_app.logger.error(f"General error creating customer: {str(e)}")
-                raise Exception(f"Failed to create customer: {str(e)}")
+            current_app.logger.error(f"Failed to create Stripe customer: {str(e)}")
+            raise Exception(f"Failed to create customer: {str(e)}")
     
     def create_checkout_session(self, user, plan_type):
         """Create a Stripe Checkout session"""
         try:
             current_app.logger.info(f"🔧 Creating checkout session for user {user.id}, plan: {plan_type}")
             
-            stripe = self._init_stripe()
-            current_app.logger.info(f"🔧 Stripe initialized successfully")
-            current_app.logger.info(f"🔧 Monthly price ID: {self.MONTHLY_PRICE_ID}")
-            current_app.logger.info(f"🔧 Annual price ID: {self.ANNUAL_PRICE_ID}")
+            self._ensure_stripe_configured()
+            current_app.logger.info(f"🔧 Stripe configured successfully")
             
             # Ensure user has a Stripe customer ID
             if not user.stripe_customer_id:
@@ -85,7 +77,6 @@ class StripeService:
                 }
             }
             
-            # Trial is handled locally, Stripe subscription starts immediately
             current_app.logger.info(f"🔧 About to create Stripe checkout session...")
             
             # Create checkout session
@@ -110,8 +101,7 @@ class StripeService:
             return session
             
         except Exception as e:
-            current_app.logger.error(f"❌ General error: {str(e)}")
-            current_app.logger.error(f"❌ Error type: {type(e)}")
+            current_app.logger.error(f"❌ Error creating checkout session: {str(e)}")
             import traceback
             current_app.logger.error(f"❌ Traceback: {traceback.format_exc()}")
             raise Exception(f"Failed to create checkout session: {str(e)}")
@@ -122,7 +112,7 @@ class StripeService:
             if not user.stripe_customer_id:
                 raise Exception("No Stripe customer found")
             
-            stripe = self._init_stripe()
+            self._ensure_stripe_configured()
             session = stripe.billing_portal.Session.create(
                 customer=user.stripe_customer_id,
                 return_url=url_for('billing.index', _external=True),
@@ -137,7 +127,7 @@ class StripeService:
     def cancel_subscription(self, subscription_id):
         """Cancel a subscription at period end"""
         try:
-            stripe = self._init_stripe()
+            self._ensure_stripe_configured()
             subscription = stripe.Subscription.modify(
                 subscription_id,
                 cancel_at_period_end=True
@@ -152,7 +142,7 @@ class StripeService:
     def reactivate_subscription(self, subscription_id):
         """Reactivate a subscription that was set to cancel"""
         try:
-            stripe = self._init_stripe()
+            self._ensure_stripe_configured()
             subscription = stripe.Subscription.modify(
                 subscription_id,
                 cancel_at_period_end=False
@@ -167,7 +157,7 @@ class StripeService:
     def get_subscription(self, subscription_id):
         """Retrieve a subscription from Stripe"""
         try:
-            stripe = self._init_stripe()
+            self._ensure_stripe_configured()
             return stripe.Subscription.retrieve(subscription_id)
         except Exception as e:
             current_app.logger.error(f"Failed to retrieve subscription: {str(e)}")
@@ -176,7 +166,7 @@ class StripeService:
     def get_checkout_session(self, session_id):
         """Retrieve a checkout session from Stripe"""
         try:
-            stripe = self._init_stripe()
+            self._ensure_stripe_configured()
             return stripe.checkout.Session.retrieve(session_id)
         except Exception as e:
             current_app.logger.error(f"Failed to retrieve checkout session: {str(e)}")
@@ -296,7 +286,7 @@ class StripeService:
     def delete_customer(self, customer_id):
         """Delete a Stripe customer and cancel all subscriptions"""
         try:
-            stripe = self._init_stripe()
+            self._ensure_stripe_configured()
             # First, cancel all active subscriptions
             subscriptions = stripe.Subscription.list(customer=customer_id, status='active')
             for subscription in subscriptions:
@@ -318,7 +308,7 @@ class StripeService:
             raise Exception("Webhook secret not configured")
         
         try:
-            stripe = self._init_stripe()
+            self._ensure_stripe_configured()
             event = stripe.Webhook.construct_event(
                 payload, sig_header, webhook_secret
             )
