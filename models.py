@@ -58,9 +58,9 @@ class User(UserMixin, db.Model):
     
     # Subscription methods
     def start_trial(self):
-        """Start a 1-day free trial"""
+        """Start a 7-day free trial"""
         self.subscription_status = 'trial'
-        self.trial_ends_at = datetime.utcnow() + timedelta(days=1)
+        self.trial_ends_at = datetime.utcnow() + timedelta(days=7)
         
     @property
     def is_trial_active(self):
