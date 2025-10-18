@@ -544,17 +544,47 @@ CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:app"]
 ### Common Issues
 
 #### Database Connection Error
-**Solution:**
-```bash
-# Ensure PostgreSQL is running
-sudo service postgresql start
+**Symptoms:**
+- `could not translate host name to address`
+- `OperationalError: connection failed`
+- `Connection refused`
 
-# Check DATABASE_URL in .env file
-echo $DATABASE_URL
+**Solutions:**
 
-# Verify database exists
-psql -l | grep writify
-```
+1. **Run Database Diagnostic Script:**
+   ```bash
+   python check_db.py
+   ```
+   This will check your DATABASE_URL and test the connection.
+
+2. **Verify DATABASE_URL Format:**
+   - Render.com uses format: `postgres://` (old) which needs to be `postgresql://`
+   - The app automatically fixes this, but verify in logs
+   - Example: `postgresql://user:pass@hostname:5432/database`
+
+3. **For Render.com Deployment:**
+   - Ensure database is created and verified
+   - Wait 2-3 minutes after database creation for DNS propagation
+   - Use **Internal Database URL** (not external)
+   - Format: `postgres://user:pass@dpg-xxxxx-a.oregon-postgres.render.com/dbname`
+
+4. **Local Development:**
+   ```bash
+   # Ensure PostgreSQL is running
+   sudo service postgresql start
+
+   # Check DATABASE_URL in .env file
+   echo $DATABASE_URL
+
+   # Verify database exists
+   psql -l | grep writify
+   ```
+
+5. **Common Fixes:**
+   - Clear old connections: Restart the web service
+   - Check if database is suspended (Render free tier)
+   - Verify network/firewall allows connections
+   - Check Render logs for detailed error messages
 
 #### Column 'subscription_status' does not exist
 **Solution:**

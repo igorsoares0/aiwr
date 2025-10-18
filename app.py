@@ -21,50 +21,85 @@ def create_app():
     
     # Create database tables on startup (for production deployment)
     with app.app_context():
-        try:
-            print("🔍 Checking if database tables exist...")
-            # Try to query users table
-            from sqlalchemy import text
-            db.session.execute(text("SELECT 1 FROM users LIMIT 1")).fetchone()
-            print("✅ Database tables already exist")
-        except Exception as e:
-            print(f"⚠️ Tables missing: {str(e)}")
-            print("📊 Creating database tables...")
-            db.create_all()
-            print("✅ Database tables created successfully!")
-            
-            # Initialize with admin user in new session
+        max_retries = 3
+        retry_delay = 2
+
+        for attempt in range(max_retries):
             try:
-                print("👤 Creating admin user...")
-                # Start fresh session after table creation
-                db.session.commit()  # Commit table creation
-                
-                from werkzeug.security import generate_password_hash
-                import datetime
-                
-                admin_user = User.query.filter_by(email='admin@writify.com').first()
-                if not admin_user:
-                    admin_user = User(
-                        email='admin@writify.com',
-                        password_hash=generate_password_hash('admin123456'),
-                        first_name='Admin',
-                        last_name='User',
-                        is_active=True,
-                        email_verified=True,
-                        subscription_status='trial',
-                        trial_ends_at=datetime.datetime.utcnow() + datetime.timedelta(days=7)
-                    )
-                    db.session.add(admin_user)
-                    db.session.commit()
-                    print("✅ Admin user created: admin@writify.com / admin123456")
+                print(f"🔍 Checking database connection (attempt {attempt + 1}/{max_retries})...")
+                print(f"📊 Database URL: {app.config['SQLALCHEMY_DATABASE_URI'][:50]}...")
+
+                # Try to query users table
+                from sqlalchemy import text
+                db.session.execute(text("SELECT 1 FROM users LIMIT 1")).fetchone()
+                print("✅ Database tables already exist and connection successful!")
+                break
+
+            except Exception as e:
+                error_msg = str(e)
+                print(f"⚠️ Database check failed: {error_msg[:200]}")
+
+                # Check if it's a missing table error (not a connection error)
+                if "does not exist" in error_msg.lower() or "relation" in error_msg.lower():
+                    try:
+                        print("📊 Creating database tables...")
+                        db.create_all()
+                        print("✅ Database tables created successfully!")
+
+                        # Initialize with admin user in new session
+                        try:
+                            print("👤 Creating admin user...")
+                            db.session.commit()  # Commit table creation
+
+                            from werkzeug.security import generate_password_hash
+                            import datetime
+
+                            admin_user = User.query.filter_by(email='admin@writify.com').first()
+                            if not admin_user:
+                                admin_user = User(
+                                    email='admin@writify.com',
+                                    password_hash=generate_password_hash('admin123456'),
+                                    first_name='Admin',
+                                    last_name='User',
+                                    is_active=True,
+                                    email_verified=True,
+                                    subscription_status='trial',
+                                    trial_ends_at=datetime.datetime.utcnow() + datetime.timedelta(days=7)
+                                )
+                                db.session.add(admin_user)
+                                db.session.commit()
+                                print("✅ Admin user created: admin@writify.com / admin123456")
+                            else:
+                                print("ℹ️ Admin user already exists")
+                        except Exception as init_error:
+                            print(f"⚠️ Could not create admin user: {init_error}")
+                            try:
+                                db.session.rollback()
+                            except:
+                                pass
+                        break
+                    except Exception as create_error:
+                        print(f"❌ Failed to create tables: {create_error}")
+                        if attempt < max_retries - 1:
+                            print(f"⏳ Retrying in {retry_delay} seconds...")
+                            import time
+                            time.sleep(retry_delay)
+                        else:
+                            print("❌ Max retries reached. Database setup failed.")
+                            print("⚠️ App will start but database operations may fail.")
                 else:
-                    print("ℹ️ Admin user already exists")
-            except Exception as init_error:
-                print(f"⚠️ Could not create admin user: {init_error}")
-                try:
-                    db.session.rollback()
-                except:
-                    pass
+                    # Connection error - retry
+                    if attempt < max_retries - 1:
+                        print(f"⏳ Retrying database connection in {retry_delay} seconds...")
+                        import time
+                        time.sleep(retry_delay)
+                    else:
+                        print("❌ Could not connect to database after multiple attempts.")
+                        print("⚠️ Please check:")
+                        print("   1. DATABASE_URL environment variable is set correctly")
+                        print("   2. Database server is running and accessible")
+                        print("   3. Network/firewall allows database connections")
+                        print("⚠️ App will start but database operations will fail.")
     
     # Initialize Flask-Login
     login_manager = LoginManager()

@@ -5,17 +5,29 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://localhost/writify_db'
+
+    # Database URL with proper handling
+    database_url = os.environ.get('DATABASE_URL') or 'postgresql://localhost/writify_db'
+
+    # Fix for Render.com: Replace postgres:// with postgresql:// if needed
+    if database_url and database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+    SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+
     # Database engine configuration for Render PostgreSQL
+    # More robust SSL configuration
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_pre_ping': True,
         'pool_recycle': 300,
+        'pool_size': 10,
+        'max_overflow': 20,
+        'pool_timeout': 30,
         'connect_args': {
-            'sslmode': 'require',
             'connect_timeout': 10,
-            'application_name': 'writify_app'
+            'application_name': 'writify_app',
+            'options': '-c statement_timeout=30000'
         }
     }
     
