@@ -635,6 +635,17 @@ flask db upgrade
 python init_database.py
 ```
 
+#### Password hash too long error
+**Symptom:** `value too long for type character varying(128)`
+
+**Solution:**
+```bash
+# Run the fix script to update password_hash column
+python fix_password_hash.py
+```
+
+This increases the `password_hash` column from 128 to 256 characters to support modern hash algorithms (bcrypt, scrypt).
+
 #### Migration Error
 **Solution (Reset migrations):**
 ```bash

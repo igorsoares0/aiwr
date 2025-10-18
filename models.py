@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(128), nullable=True)
+    password_hash = db.Column(db.String(256), nullable=True)  # Increased from 128 to support bcrypt/scrypt hashes
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
