@@ -52,6 +52,7 @@ A complete, secure, and production-ready SaaS application built with Flask, feat
 - PostgreSQL
 - Stripe account (for payments)
 - Anthropic API key (for AI features)
+- Mailgun account (for email delivery)
 - Google Cloud account (for OAuth - optional)
 - Cloudinary account (for file uploads - optional)
 
@@ -96,13 +97,20 @@ STRIPE_ANNUAL_PRICE_ID=price_...
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Email Configuration (Mailtrap for testing)
-MAIL_SERVER=sandbox.smtp.mailtrap.io
-MAIL_PORT=2525
-MAIL_USE_TLS=True
-MAIL_USERNAME=your-mailtrap-username
-MAIL_PASSWORD=your-mailtrap-password
-MAIL_DEFAULT_SENDER=noreply@writify.com
+# Email Configuration - Mailgun (Production)
+MAILGUN_API_KEY=your-mailgun-api-key
+MAILGUN_DOMAIN=prosewrites.com
+MAILGUN_API_BASE_URL=https://api.mailgun.net/v3
+MAIL_DEFAULT_SENDER=contact@prosewrites.com
+USE_MAILGUN_API=True
+
+# Email Configuration - SMTP (Development/Testing - Optional)
+# MAIL_SERVER=sandbox.smtp.mailtrap.io
+# MAIL_PORT=2525
+# MAIL_USE_TLS=True
+# MAIL_USERNAME=your-mailtrap-username
+# MAIL_PASSWORD=your-mailtrap-password
+# USE_MAILGUN_API=False
 
 # Cloudinary (Optional for file uploads)
 CLOUDINARY_CLOUD_NAME=your-cloud-name
@@ -237,12 +245,77 @@ python init_database.py
 
 ### 6. Email Configuration
 
-#### Using Mailtrap (Recommended for development)
+#### Production: Using Mailgun API (Recommended)
+
+1. **Sign up at [Mailgun](https://mailgun.com)**
+   - Create a free account (5,000 emails/month)
+
+2. **Add and Verify Your Domain**
+   - Go to Sending > Domains > Add New Domain
+   - Enter your domain: `prosewrites.com`
+   - Choose region: **US** (or EU based on your location)
+
+3. **Configure DNS Records**
+   - Add the following DNS records in your Hostinger DNS settings:
+
+   **TXT Record (Domain Verification):**
+   ```
+   Name: @
+   Value: [provided by Mailgun]
+   ```
+
+   **TXT Record (SPF):**
+   ```
+   Name: @
+   Value: v=spf1 include:mailgun.org ~all
+   ```
+
+   **TXT Record (DKIM):**
+   ```
+   Name: [provided by Mailgun, usually like: smtp._domainkey]
+   Value: [provided by Mailgun]
+   ```
+
+   **CNAME Record (Tracking - Optional):**
+   ```
+   Name: email
+   Value: mailgun.org
+   ```
+
+4. **Wait for DNS Propagation**
+   - Usually takes 15-30 minutes (can take up to 48 hours)
+   - Check verification status in Mailgun dashboard
+
+5. **Get Your Credentials**
+   - Go to **Sending** > **Domain settings** > **SMTP credentials**
+   - Copy your:
+     - **API Key**: Settings > API Keys
+     - **Domain Name**: Your verified domain
+     - **API Base URL**: `https://api.mailgun.net/v3` (US) or `https://api.eu.mailgun.net/v3` (EU)
+
+6. **Update `.env` File**
+   ```env
+   MAILGUN_API_KEY=your-api-key-here
+   MAILGUN_DOMAIN=prosewrites.com
+   MAILGUN_API_BASE_URL=https://api.mailgun.net/v3
+   MAIL_DEFAULT_SENDER=contact@prosewrites.com
+   USE_MAILGUN_API=True
+   ```
+
+#### Development: Using Mailtrap (for testing)
 
 1. Sign up at [Mailtrap](https://mailtrap.io)
 2. Create an inbox
 3. Get SMTP credentials from inbox settings
-4. Update `.env` file with credentials
+4. Update `.env` file:
+   ```env
+   MAIL_SERVER=sandbox.smtp.mailtrap.io
+   MAIL_PORT=2525
+   MAIL_USE_TLS=True
+   MAIL_USERNAME=your-mailtrap-username
+   MAIL_PASSWORD=your-mailtrap-password
+   USE_MAILGUN_API=False
+   ```
 
 ### 7. Cloudinary Configuration (Optional)
 
@@ -512,10 +585,22 @@ python init_database.py
 
 #### Emails Not Sending
 **Solutions:**
-- Check Mailtrap credentials in .env
-- Verify `MAIL_*` settings
-- Check Mailtrap inbox for test emails
-- Ensure firewall allows SMTP connections
+- **Mailgun Issues:**
+  - Verify `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` are correct
+  - Check domain verification status in Mailgun dashboard
+  - Ensure DNS records (SPF, DKIM) are properly configured
+  - Verify API key has sending permissions
+  - Check Mailgun logs for detailed error messages
+  - Ensure `USE_MAILGUN_API=True` in .env
+- **SMTP Issues (Development):**
+  - Check Mailtrap/SMTP credentials in .env
+  - Verify `MAIL_*` settings
+  - Ensure firewall allows SMTP connections
+  - Set `USE_MAILGUN_API=False` for SMTP mode
+- **General:**
+  - Check application logs for error messages
+  - Test with Mailgun's email validation endpoint
+  - Verify recipient email is valid
 
 #### Stripe Integration Issues
 **Solutions:**
@@ -592,6 +677,7 @@ python -c "import stripe; stripe.api_key='sk_test_...'; print(stripe.Account.ret
 - **Google OAuth**: https://developers.google.com/identity/protocols/oauth2
 - **Anthropic API**: https://docs.anthropic.com/
 - **Flask**: https://flask.palletsprojects.com/
+- **Mailgun**: https://documentation.mailgun.com/
 - **Cloudinary**: https://cloudinary.com/documentation
 
 ### Getting Help
