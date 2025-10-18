@@ -3,42 +3,57 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def get_database_url():
+    """Get and validate database URL with proper error handling"""
+    database_url = os.environ.get('DATABASE_URL', '').strip()
+
+    # Check if URL is empty or None
+    if not database_url:
+        print("⚠️ WARNING: DATABASE_URL environment variable is not set!")
+        print("⚠️ Using fallback local PostgreSQL connection")
+        return 'postgresql://localhost/writify_db'
+
+    # Fix for Render.com: Replace postgres:// with postgresql://
+    if database_url.startswith('postgres://'):
+        print("🔧 Converting postgres:// to postgresql:// for SQLAlchemy compatibility")
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+    # Validate URL format
+    if not (database_url.startswith('postgresql://') or database_url.startswith('postgres://')):
+        print(f"⚠️ WARNING: Invalid DATABASE_URL format: {database_url[:30]}...")
+        print("⚠️ Using fallback local PostgreSQL connection")
+        return 'postgresql://localhost/writify_db'
+
+    print(f"✅ Database URL configured: {database_url[:50]}...")
+    return database_url
+
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
 
-    # Database URL with proper handling
-    database_url = os.environ.get('DATABASE_URL')
-
-    # Validate and fix database URL
-    if not database_url:
-        # No DATABASE_URL provided - use local default
-        print("⚠️ WARNING: DATABASE_URL not set, using local PostgreSQL")
-        database_url = 'postgresql://localhost/writify_db'
-    elif database_url.strip() == '':
-        # Empty DATABASE_URL - use local default
-        print("⚠️ WARNING: DATABASE_URL is empty, using local PostgreSQL")
-        database_url = 'postgresql://localhost/writify_db'
-    else:
-        # Fix for Render.com: Replace postgres:// with postgresql:// if needed
-        if database_url.startswith('postgres://'):
-            database_url = database_url.replace('postgres://', 'postgresql://', 1)
-
-    SQLALCHEMY_DATABASE_URI = database_url
+    # Get database URL with validation
+    SQLALCHEMY_DATABASE_URI = get_database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Database engine configuration for Render PostgreSQL
-    # More robust SSL configuration
+    # Database engine configuration for PostgreSQL (Neon DB, Render, etc.)
+    # Optimized for serverless PostgreSQL like Neon
+    _connect_args = {
+        'connect_timeout': 10,
+        'application_name': 'writify_app',
+    }
+
+    # Add SSL mode if DATABASE_URL contains sslmode parameter (for Neon DB)
+    _db_url = os.environ.get('DATABASE_URL', '')
+    if 'sslmode' not in _db_url and _db_url.startswith('postgresql://'):
+        # If no sslmode specified but using PostgreSQL, default to prefer
+        _connect_args['sslmode'] = 'prefer'
+
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,
-        'pool_recycle': 300,
-        'pool_size': 10,
-        'max_overflow': 20,
-        'pool_timeout': 30,
-        'connect_args': {
-            'connect_timeout': 10,
-            'application_name': 'writify_app',
-            'options': '-c statement_timeout=30000'
-        }
+        'pool_pre_ping': True,  # Check connections before using
+        'pool_recycle': 300,    # Recycle connections every 5 min
+        'pool_size': 5,         # Smaller pool for serverless (Neon optimized)
+        'max_overflow': 10,     # Max overflow connections
+        'pool_timeout': 30,     # Timeout waiting for connection
+        'connect_args': _connect_args
     }
     
     # Google OAuth

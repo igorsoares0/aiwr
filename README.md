@@ -49,7 +49,7 @@ A complete, secure, and production-ready SaaS application built with Flask, feat
 ## 📋 Prerequisites
 
 - Python 3.8+
-- PostgreSQL
+- PostgreSQL (Local) or Neon DB (Production - recommended)
 - Stripe account (for payments)
 - Anthropic API key (for AI features)
 - Mailgun account (for email delivery)
@@ -81,7 +81,12 @@ Edit `.env` with your configuration:
 ```env
 # Basic Configuration
 SECRET_KEY=your-secret-key-here
+
+# Database - Local Development
 DATABASE_URL=postgresql://username:password@localhost/writify_db
+
+# Database - Production (Neon DB - recommended)
+# DATABASE_URL=postgresql://username:password@ep-xxxxx.region.aws.neon.tech/dbname?sslmode=require
 
 # AI Service (Required)
 ANTHROPIC_API_KEY=your-anthropic-api-key
@@ -120,7 +125,38 @@ CLOUDINARY_API_SECRET=your-api-secret
 
 ### 3. Database Setup
 
-#### Option A: Using Migration Scripts (Recommended)
+#### Production: Using Neon DB (Recommended for Deployment)
+
+**Neon DB** is a serverless PostgreSQL database, perfect for production deployments.
+
+1. **Create Neon Account**
+   - Sign up at [Neon](https://neon.tech)
+   - Create a new project
+
+2. **Get Connection String**
+   - In your Neon dashboard, click on your project
+   - Go to **"Connection Details"** or **"Dashboard"**
+   - Copy the **Connection String** (looks like):
+     ```
+     postgresql://username:password@ep-xxxxx.region.aws.neon.tech/dbname?sslmode=require
+     ```
+
+3. **Configure in Production (Render.com)**
+   - Go to Render Dashboard → Your Web Service
+   - Click **"Environment"**
+   - Add environment variable:
+     - **Key**: `DATABASE_URL`
+     - **Value**: [Paste your Neon connection string]
+   - Save and redeploy
+
+4. **Benefits of Neon DB**
+   - ✅ Serverless (auto-scales)
+   - ✅ Free tier with 3GB storage
+   - ✅ Automatic backups
+   - ✅ Instant branching for dev/staging
+   - ✅ SSL encryption by default
+
+#### Local Development: Using Migration Scripts (Recommended)
 
 ```bash
 # Run migrations
@@ -562,7 +598,13 @@ CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:app"]
    - The app automatically fixes this, but verify in logs
    - Example: `postgresql://user:pass@hostname:5432/database`
 
-3. **For Render.com Deployment:**
+3. **For Neon DB (Recommended):**
+   - Ensure you copied the **full connection string** from Neon dashboard
+   - Must include `?sslmode=require` at the end
+   - Check if database is active (not paused) in Neon dashboard
+   - Format: `postgresql://user:pass@ep-xxxxx.region.aws.neon.tech/dbname?sslmode=require`
+
+4. **For Render Database (Alternative):**
    - Ensure database is created and verified
    - Wait 2-3 minutes after database creation for DNS propagation
    - Use **Internal Database URL** (not external)
