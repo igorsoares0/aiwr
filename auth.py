@@ -6,11 +6,13 @@ from models import db, User, PasswordResetToken, EmailVerificationToken
 from forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm
 from utils import send_email
 from google_auth_utils import GoogleAuthValidator
+from security import rate_limit
 import secrets
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
+@rate_limit(max_requests=5, per_seconds=300)  # 5 tentativas a cada 5 minutos
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
@@ -26,7 +28,8 @@ def login():
             
             login_user(user, remember=form.remember_me.data)
             next_page = request.args.get('next')
-            if next_page:
+            # Security: Only allow relative URLs to prevent open redirect attacks
+            if next_page and next_page.startswith('/') and not next_page.startswith('//'):
                 return redirect(next_page)
             return redirect(url_for('main.dashboard'))
         else:
@@ -35,6 +38,7 @@ def login():
     return render_template('auth/login.html', form=form)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
+@rate_limit(max_requests=3, per_seconds=3600)  # 3 registros por hora por IP
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
@@ -75,6 +79,7 @@ def register():
     return render_template('auth/register.html', form=form)
 
 @auth_bp.route('/google-login', methods=['POST'])
+@rate_limit(max_requests=10, per_seconds=300)  # 10 tentativas a cada 5 minutos
 def google_login():
     token = request.form.get('credential')
     if not token:
@@ -106,6 +111,12 @@ def google_login():
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             current_app.logger.warning(f"Invalid Google token issuer: {idinfo.get('iss')} from IP: {request.remote_addr}")
             flash('Invalid Google token.', 'error')
+            return redirect(url_for('auth.login'))
+        
+        # Security: Verify email is verified by Google
+        if not idinfo.get('email_verified', False):
+            current_app.logger.warning(f"Unverified Google email attempt: {idinfo.get('email')} from IP: {request.remote_addr}")
+            flash('Please verify your Google email address first.', 'error')
             return redirect(url_for('auth.login'))
         
         # Extract and validate user information
@@ -154,7 +165,8 @@ def google_login():
         
         # Check for next parameter
         next_page = request.args.get('next')
-        if next_page and next_page.startswith('/'):  # Security: only allow relative URLs
+        # Security: Only allow relative URLs and prevent // bypass
+        if next_page and next_page.startswith('/') and not next_page.startswith('//'):
             return redirect(next_page)
         
         return redirect(url_for('main.dashboard'))
@@ -189,6 +201,7 @@ def logout():
     return redirect(url_for('main.index'))
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+@rate_limit(max_requests=3, per_seconds=3600)  # 3 tentativas por hora
 def forgot_password():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
